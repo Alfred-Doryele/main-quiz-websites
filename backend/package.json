@@ -1,0 +1,18 @@
+{
+  "name": "brainiac-quizzes-backend",
+  "version": "1.0.0",
+  "description": "API for Brainiac Quizzes. Switches between MySQL, PostgreSQL, and MongoDB via DB_TYPE in .env",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "seed": "node seed.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "mongodb": "^6.7.0",
+    "mysql2": "^3.10.1",
+    "pg": "^8.12.0"
+  }
+}

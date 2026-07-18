@@ -15,12 +15,12 @@
   <div class="marquee-track">
     <span>ROUND STARTS IN 00:15</span><span>•</span>
     <span>TOP SCORE THIS WEEK: 980 PTS</span><span>•</span>
-    <span>4 CATEGORIES LIVE NOW</span><span>•</span>
-    <span>NEW: SCIENCE QUIZ ADDED</span><span>•</span>
+    <span>7 CATEGORIES LIVE NOW</span><span>•</span>
+    <span>NEW: HISTORY &amp; GEOGRAPHY ADDED</span><span>•</span>
     <span>ROUND STARTS IN 00:15</span><span>•</span>
     <span>TOP SCORE THIS WEEK: 980 PTS</span><span>•</span>
-    <span>4 CATEGORIES LIVE NOW</span><span>•</span>
-    <span>NEW: SCIENCE QUIZ ADDED</span><span>•</span>
+    <span>7 CATEGORIES LIVE NOW</span><span>•</span>
+    <span>NEW: HISTORY &amp; GEOGRAPHY ADDED</span><span>•</span>
   </div>
 </div>
 
@@ -76,7 +76,7 @@
 
   <section id="home" class="hero">
     <div class="hero-inner">
-      <p class="eyebrow eyebrow-hero">Live now &middot; 4 categories &middot; instant scoring</p>
+      <p class="eyebrow eyebrow-hero">Live now &middot; 7 categories &middot; instant scoring</p>
       <h1 class="hero-title">Turning boredom<br> into <span class="hero-highlight">brilliance,</span><br> one quiz at a time.</h1>
       <p class="hero-sub">Test your knowledge, race the clock, and climb the leaderboard. No downloads, no fine print — just questions worth answering.</p>
       <div class="hero-actions">
@@ -84,7 +84,7 @@
         <button class="btn btn-outline btn-lg" onclick="document.getElementById('leaderboard').scrollIntoView({behavior:'smooth'})">See leaderboard</button>
       </div>
       <div class="hero-stats">
-        <div class="stat"><span class="stat-num" id="statQuizzes">4</span><span class="stat-label">Categories</span></div>
+        <div class="stat"><span class="stat-num" id="statQuizzes">—</span><span class="stat-label">Categories</span></div>
         <div class="stat"><span class="stat-num" id="statPlayers">—</span><span class="stat-label">Players today</span></div>
         <div class="stat"><span class="stat-num" id="statTop">—</span><span class="stat-label">Top score</span></div>
       </div>
@@ -103,6 +103,7 @@
   <section id="quizzes" class="section">
     <p class="eyebrow">Pick your round</p>
     <h2 class="section-title">Trending quizzes</h2>
+    <div class="filter-row" id="filterRow"><!-- injected by script.js --></div>
     <div class="quiz-grid" id="quizGrid"><!-- injected by script.js --></div>
     <p class="no-results" id="noResults" hidden>No quizzes match your search. Try “science” or “family.”</p>
   </section>
@@ -110,7 +111,8 @@
   <section id="leaderboard" class="section section-alt">
     <p class="eyebrow">Bragging rights</p>
     <h2 class="section-title">Leaderboard</h2>
-    <p class="section-sub">Top scores stored on this device. Play a quiz above to claim a spot.</p>
+    <p class="section-sub" id="leaderboardSub">Top scores stored on this device. Play a quiz above to claim a spot.</p>
+    <p class="data-source-pill" id="dataSourceNote">Checking connection…</p>
     <div class="leaderboard-wrap">
       <table class="leaderboard-table">
         <thead>
@@ -124,7 +126,7 @@
   <section class="section section-cta">
     <div class="cta-box">
       <h2>Ready to test yourself?</h2>
-      <p>Four rounds. One leaderboard. Zero downloads.</p>
+      <p>Seven categories. One leaderboard. Zero downloads.</p>
       <button class="btn btn-primary btn-lg" onclick="document.getElementById('quizzes').scrollIntoView({behavior:'smooth'})">Play now</button>
     </div>
   </section>

@@ -1,97 +1,34 @@
 /* ==========================================================================
-   Brainiac Quizzes — app logic
-   Data is intentionally shaped the way it would look coming out of a real
-   database: quizzes -> questions -> choices, and attempts -> scores.
-   That's the same shape used in database/mysql_schema.sql,
-   database/postgresql_schema.sql and database/mongodb_setup.js.
-   Right now everything is stored in localStorage as a stand-in for a real
-   backend. Swap the three functions marked "DATA LAYER" for real fetch()
-   calls once you wire up a server, and nothing else needs to change.
+   Brainiac Quizzes — app logic (v2)
+
+   HOW THE BACKEND SWITCH WORKS
+   -----------------------------
+   Set API_BASE_URL below to a running backend (see /backend) and the site
+   will use real MySQL, PostgreSQL, or MongoDB data — whichever the backend
+   is configured for. Leave it empty and the site runs standalone using
+   data/quizzes.json + localStorage, which is exactly what happens when this
+   is hosted on GitHub Pages (a static host can't run a database).
    ========================================================================== */
 
-const QUIZZES = [
-  {
-    id: "maths-iq",
-    tag: "Logic",
-    title: "IQ Test: Maths",
-    description: "Sharpen your mental arithmetic and pattern spotting.",
-    minutes: 3,
-    questions: [
-      { q: "What is 12 × 8?", options: ["96", "88", "108", "86"], answer: 0 },
-      { q: "Next number: 2, 4, 8, 16, ?", options: ["24", "32", "20", "18"], answer: 1 },
-      { q: "What is 15% of 200?", options: ["25", "35", "30", "20"], answer: 2 },
-      { q: "If x + 7 = 15, what is x?", options: ["7", "9", "8", "6"], answer: 2 },
-      { q: "What is the square root of 144?", options: ["12", "14", "11", "13"], answer: 0 },
-    ],
-  },
-  {
-    id: "family-quiz",
-    tag: "Lifestyle",
-    title: "Family Quiz",
-    description: "Fun questions about family life, traditions, and bonds.",
-    minutes: 2,
-    questions: [
-      { q: "What is traditionally the 'head' role in many families?", options: ["Youngest child", "Parent/guardian", "Neighbour", "Pet"], answer: 1 },
-      { q: "A gathering of extended family is often called a...", options: ["Reunion", "Meeting", "Session", "Conference"], answer: 0 },
-      { q: "Which of these is a common family bonding activity?", options: ["Filing taxes separately", "Eating meals together", "Avoiding each other", "Working night shifts"], answer: 1 },
-      { q: "What do many families celebrate yearly to mark someone's birth?", options: ["Anniversary", "Birthday", "Graduation", "Promotion"], answer: 1 },
-    ],
-  },
-  {
-    id: "science-quiz",
-    tag: "STEM",
-    title: "Science Quiz",
-    description: "From chemistry to biology — how sharp is your science?",
-    minutes: 3,
-    questions: [
-      { q: "What gas do plants absorb from the atmosphere?", options: ["Oxygen", "Nitrogen", "Carbon dioxide", "Hydrogen"], answer: 2 },
-      { q: "What is H2O more commonly known as?", options: ["Salt", "Water", "Sugar", "Oxygen"], answer: 1 },
-      { q: "Which organ pumps blood around the body?", options: ["Lungs", "Liver", "Heart", "Kidney"], answer: 2 },
-      { q: "What force pulls objects toward Earth?", options: ["Magnetism", "Gravity", "Friction", "Tension"], answer: 1 },
-      { q: "Which planet is known as the Red Planet?", options: ["Venus", "Mars", "Jupiter", "Mercury"], answer: 1 },
-    ],
-  },
-  {
-    id: "intelligence-quiz",
-    tag: "Trivia",
-    title: "Intelligence Quiz",
-    description: "General knowledge questions covering the world's sharpest minds.",
-    minutes: 2,
-    questions: [
-      { q: "Who developed the theory of relativity?", options: ["Isaac Newton", "Albert Einstein", "Nikola Tesla", "Galileo Galilei"], answer: 1 },
-      { q: "IQ stands for which of these?", options: ["Intelligence Quotient", "Instant Question", "Inner Quality", "Intellect Quality"], answer: 0 },
-      { q: "Which of these is a sign of critical thinking?", options: ["Accepting all claims blindly", "Questioning evidence", "Ignoring facts", "Avoiding new ideas"], answer: 1 },
-      { q: "Chess is often used to measure which skill?", options: ["Strength", "Strategic thinking", "Speed", "Memory only"], answer: 1 },
-    ],
-  },
-];
+const API_BASE_URL = ""; // e.g. "http://localhost:4000" once your backend is running
 
-/* ---------------- DATA LAYER (swap for API calls later) ---------------- */
-function getCurrentUser() {
-  return localStorage.getItem("bq_current_user");
-}
-function setCurrentUser(name) {
-  localStorage.setItem("bq_current_user", name);
-}
-function getAttempts() {
-  return JSON.parse(localStorage.getItem("bq_attempts") || "[]");
-}
-function saveAttempt(attempt) {
-  const attempts = getAttempts();
-  attempts.push(attempt); // shape: { username, quiz_id, quiz_title, score, total, taken_at }
-  localStorage.setItem("bq_attempts", JSON.stringify(attempts));
-}
-/* ------------------------------------------------------------------------ */
-
+let ALL_QUIZZES = [];
+let activeCategory = "all";
 let activeQuiz = null;
+let activeRound = [];
 let activeIndex = 0;
 let activeScore = 0;
+let usingLiveApi = false;
 
-document.addEventListener("DOMContentLoaded", () => {
-  renderQuizGrid(QUIZZES);
-  renderLeaderboard();
+/* ---------------- boot ---------------- */
+document.addEventListener("DOMContentLoaded", async () => {
+  await loadQuizzes();
+  renderFilterChips();
+  renderQuizGrid(ALL_QUIZZES);
+  await renderLeaderboard();
   updateHeaderForUser();
   updateHeroStats();
+  setDataSourcePill();
 
   const navToggle = document.getElementById("navToggle");
   const mainNav = document.getElementById("mainNav");
@@ -104,7 +41,164 @@ document.addEventListener("DOMContentLoaded", () => {
   );
 });
 
+/* ---------------- data loading (API first, local file fallback) ---------------- */
+async function loadQuizzes() {
+  if (API_BASE_URL) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/quizzes`);
+      if (res.ok) {
+        ALL_QUIZZES = await res.json();
+        usingLiveApi = true;
+        return;
+      }
+    } catch (err) {
+      console.warn("Backend unreachable, falling back to local quiz data.", err);
+    }
+  }
+  const res = await fetch("data/quizzes.json");
+  ALL_QUIZZES = await res.json();
+  usingLiveApi = false;
+}
+
+function setDataSourcePill() {
+  const pill = document.getElementById("dataSourceNote");
+  if (usingLiveApi) {
+    pill.textContent = "Connected — scores are saved to the live database.";
+    pill.classList.add("live");
+    pill.classList.remove("local");
+  } else {
+    pill.textContent = "Demo mode — scores are saved to this browser only.";
+    pill.classList.add("local");
+    pill.classList.remove("live");
+  }
+}
+
+/* ---------------- DATA LAYER: attempts + leaderboard ---------------- */
+function getCurrentUser() {
+  return localStorage.getItem("bq_current_user");
+}
+function setCurrentUser(name) {
+  localStorage.setItem("bq_current_user", name);
+}
+function getLocalAttempts() {
+  return JSON.parse(localStorage.getItem("bq_attempts") || "[]");
+}
+function saveLocalAttempt(attempt) {
+  const attempts = getLocalAttempts();
+  attempts.push(attempt);
+  localStorage.setItem("bq_attempts", JSON.stringify(attempts));
+}
+
+async function submitAttempt(attempt) {
+  if (usingLiveApi) {
+    try {
+      await fetch(`${API_BASE_URL}/api/attempts`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(attempt),
+      });
+      return;
+    } catch (err) {
+      console.warn("Could not reach backend, saving locally instead.", err);
+    }
+  }
+  saveLocalAttempt(attempt);
+}
+
+async function fetchLeaderboard() {
+  if (usingLiveApi) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/leaderboard`);
+      if (res.ok) return await res.json();
+    } catch (err) {
+      console.warn("Could not reach backend for leaderboard.", err);
+    }
+  }
+  return getLocalAttempts()
+    .map((a) => ({ ...a, percentage: Math.round((a.score / a.total) * 100) }))
+    .sort((a, b) => b.percentage - a.percentage || new Date(a.taken_at) - new Date(b.taken_at))
+    .slice(0, 10);
+}
+
+/* ---------------- "don't repeat last round" logic ---------------- */
+// Keyed per quiz slug so each category tracks its own recently-seen questions.
+function getRecentlyUsed(slug) {
+  return JSON.parse(localStorage.getItem(`bq_recent_${slug}`) || "[]");
+}
+function setRecentlyUsed(slug, ids) {
+  localStorage.setItem(`bq_recent_${slug}`, JSON.stringify(ids));
+}
+
+function shuffle(array) {
+  const copy = [...array];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
+// Picks a fresh set of questions for this play-through, avoiding whatever
+// was asked last time whenever the pool is big enough to allow it. Once the
+// full pool has been cycled through, it starts reusing older questions again
+// rather than ever showing literally nothing.
+function buildRound(quiz) {
+  const roundSize = Math.min(quiz.round_size || 5, quiz.questions.length);
+  const recent = getRecentlyUsed(quiz.slug);
+  const fresh = quiz.questions.filter((q) => !recent.includes(q.id));
+  const pool = fresh.length >= roundSize ? fresh : quiz.questions;
+
+  const chosen = shuffle(pool).slice(0, roundSize);
+  setRecentlyUsed(quiz.slug, chosen.map((q) => q.id));
+
+  // Shuffle each question's own option order too, so the correct answer
+  // isn't always sitting in the same position.
+  return chosen.map((q) => ({
+    id: q.id,
+    text: q.text,
+    options: shuffle(q.options),
+  }));
+}
+
 /* ---------------- rendering ---------------- */
+function renderFilterChips() {
+  const row = document.getElementById("filterRow");
+  const categories = ["all", ...new Set(ALL_QUIZZES.map((q) => q.tag))];
+  row.innerHTML = categories
+    .map(
+      (cat) =>
+        `<button class="filter-chip ${cat === activeCategory ? "active" : ""}" data-cat="${cat}">${
+          cat === "all" ? "All" : cat
+        }</button>`
+    )
+    .join("");
+  row.querySelectorAll(".filter-chip").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      activeCategory = btn.dataset.cat;
+      renderFilterChips();
+      applyFilters();
+    });
+  });
+}
+
+function applyFilters() {
+  const term = document.getElementById("searchBar").value.trim().toLowerCase();
+  const filtered = ALL_QUIZZES.filter((q) => {
+    const matchesCategory = activeCategory === "all" || q.tag === activeCategory;
+    const matchesSearch =
+      !term ||
+      q.title.toLowerCase().includes(term) ||
+      q.tag.toLowerCase().includes(term) ||
+      q.description.toLowerCase().includes(term);
+    return matchesCategory && matchesSearch;
+  });
+  renderQuizGrid(filtered);
+}
+
+function searchQuizzes() {
+  applyFilters();
+}
+
 function renderQuizGrid(list) {
   const grid = document.getElementById("quizGrid");
   const noResults = document.getElementById("noResults");
@@ -126,27 +220,26 @@ function renderQuizGrid(list) {
         <h3>${quiz.title}</h3>
         <p>${quiz.description}</p>
         <div class="quiz-card-meta">
-          <span>${quiz.questions.length} questions</span>
+          <span>${quiz.round_size || 5} of ${quiz.questions.length} questions</span>
           <span>~${quiz.minutes} min</span>
         </div>
-        <button class="btn btn-primary btn-block" data-quiz="${quiz.id}">Play</button>
+        <button class="btn btn-primary btn-block" data-quiz="${quiz.slug}">Play</button>
       </div>`;
-    card.querySelector("button").addEventListener("click", () => startQuiz(quiz.id));
+    card.querySelector("button").addEventListener("click", () => startQuiz(quiz.slug));
     grid.appendChild(card);
   });
 }
 
-function renderLeaderboard() {
+async function renderLeaderboard() {
   const body = document.getElementById("leaderboardBody");
-  const attempts = getAttempts();
+  const rows = await fetchLeaderboard();
 
-  if (attempts.length === 0) {
+  if (rows.length === 0) {
     body.innerHTML = `<tr class="empty-row"><td colspan="4">No scores yet — be the first on the board.</td></tr>`;
     return;
   }
 
-  const ranked = [...attempts].sort((a, b) => b.score / b.total - a.score / a.total).slice(0, 10);
-  body.innerHTML = ranked
+  body.innerHTML = rows
     .map((a, i) => {
       const rankClass = i === 0 ? "rank-1" : i === 1 ? "rank-2" : i === 2 ? "rank-3" : "";
       return `<tr>
@@ -159,10 +252,11 @@ function renderLeaderboard() {
     .join("");
 }
 
-function updateHeroStats() {
-  const attempts = getAttempts();
-  const players = new Set(attempts.map((a) => a.username)).size;
-  const top = attempts.length ? Math.max(...attempts.map((a) => Math.round((a.score / a.total) * 100))) : null;
+async function updateHeroStats() {
+  document.getElementById("statQuizzes").textContent = ALL_QUIZZES.length;
+  const rows = await fetchLeaderboard();
+  const players = new Set(rows.map((a) => a.username)).size;
+  const top = rows.length ? Math.max(...rows.map((a) => a.percentage)) : null;
   document.getElementById("statPlayers").textContent = players || "0";
   document.getElementById("statTop").textContent = top !== null ? top + "%" : "—";
 }
@@ -190,15 +284,6 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
-/* ---------------- search ---------------- */
-function searchQuizzes() {
-  const term = document.getElementById("searchBar").value.trim().toLowerCase();
-  const filtered = QUIZZES.filter(
-    (q) => q.title.toLowerCase().includes(term) || q.tag.toLowerCase().includes(term) || q.description.toLowerCase().includes(term)
-  );
-  renderQuizGrid(filtered);
-}
-
 /* ---------------- login modal ---------------- */
 function openLoginModal() {
   document.getElementById("loginModal").classList.add("open");
@@ -224,8 +309,8 @@ function loginUser() {
 }
 
 /* ---------------- quiz engine ---------------- */
-function startQuiz(quizId) {
-  const quiz = QUIZZES.find((q) => q.id === quizId);
+function startQuiz(slug) {
+  const quiz = ALL_QUIZZES.find((q) => q.slug === slug);
   if (!quiz) return;
 
   if (!getCurrentUser()) {
@@ -234,6 +319,7 @@ function startQuiz(quizId) {
   }
 
   activeQuiz = quiz;
+  activeRound = buildRound(quiz);
   activeIndex = 0;
   activeScore = 0;
   document.getElementById("quizModal").classList.add("open");
@@ -247,16 +333,15 @@ function closeQuizModal() {
 
 function renderQuestion() {
   const container = document.getElementById("quizPlay");
-  const quiz = activeQuiz;
-  const q = quiz.questions[activeIndex];
-  const progressPct = Math.round((activeIndex / quiz.questions.length) * 100);
+  const q = activeRound[activeIndex];
+  const progressPct = Math.round((activeIndex / activeRound.length) * 100);
 
   container.innerHTML = `
     <div class="qp-progress"><div class="qp-progress-bar" style="width:${progressPct}%"></div></div>
-    <p class="qp-tag">${quiz.title} · Question ${activeIndex + 1} of ${quiz.questions.length}</p>
-    <p class="qp-question">${q.q}</p>
+    <p class="qp-tag">${activeQuiz.title} · Question ${activeIndex + 1} of ${activeRound.length}</p>
+    <p class="qp-question">${q.text}</p>
     <div class="qp-options">
-      ${q.options.map((opt, i) => `<button class="qp-opt" data-idx="${i}">${opt}</button>`).join("")}
+      ${q.options.map((opt, i) => `<button class="qp-opt" data-idx="${i}">${opt.t}</button>`).join("")}
     </div>
     <div class="qp-footer"><span>Score: ${activeScore}</span><span>${getCurrentUser()}</span></div>
   `;
@@ -267,11 +352,12 @@ function renderQuestion() {
 }
 
 function handleAnswer(choiceIdx) {
-  const q = activeQuiz.questions[activeIndex];
+  const q = activeRound[activeIndex];
+  const correctIdx = q.options.findIndex((o) => o.c);
   const buttons = document.querySelectorAll(".qp-opt");
   buttons.forEach((b) => (b.disabled = true));
-  buttons[q.answer].classList.add("qp-correct");
-  if (choiceIdx !== q.answer) {
+  buttons[correctIdx].classList.add("qp-correct");
+  if (choiceIdx !== correctIdx) {
     buttons[choiceIdx].classList.add("qp-wrong");
   } else {
     activeScore++;
@@ -279,7 +365,7 @@ function handleAnswer(choiceIdx) {
 
   setTimeout(() => {
     activeIndex++;
-    if (activeIndex < activeQuiz.questions.length) {
+    if (activeIndex < activeRound.length) {
       renderQuestion();
     } else {
       finishQuiz();
@@ -287,13 +373,13 @@ function handleAnswer(choiceIdx) {
   }, 900);
 }
 
-function finishQuiz() {
-  const total = activeQuiz.questions.length;
+async function finishQuiz() {
+  const total = activeRound.length;
   const username = getCurrentUser();
 
-  saveAttempt({
+  await submitAttempt({
     username,
-    quiz_id: activeQuiz.id,
+    quiz_slug: activeQuiz.slug,
     quiz_title: activeQuiz.title,
     score: activeScore,
     total,
@@ -306,14 +392,14 @@ function finishQuiz() {
     <div class="qp-result">
       <p class="qp-tag">${activeQuiz.title} — complete</p>
       <div class="qp-result-score">${activeScore}/${total}</div>
-      <p class="qp-result-label">${pct}% correct. Nice work, ${escapeHtml(username)}.</p>
+      <p class="qp-result-label">${pct}% correct. Nice work, ${escapeHtml(username)}. Play again for a fresh set of questions.</p>
       <button class="btn btn-primary" id="qpDone">See leaderboard</button>
     </div>
   `;
-  document.getElementById("qpDone").addEventListener("click", () => {
+  document.getElementById("qpDone").addEventListener("click", async () => {
     closeQuizModal();
-    renderLeaderboard();
-    updateHeroStats();
+    await renderLeaderboard();
+    await updateHeroStats();
     document.getElementById("leaderboard").scrollIntoView({ behavior: "smooth" });
   });
 }

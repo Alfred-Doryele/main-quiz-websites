@@ -1,138 +1,146 @@
-# Brainiac Quizzes — rebuild + 3 databases
+# Brainiac Quizzes v2 — bigger question banks, real shuffling, real backend
 
-This replaces your old `b.html` / `Styles.CSS` / `script.js`. The old quiz
-links pointed at `file:///C:/Users/Doryele Alfred/Desktop/...` — that's why
-it broke the moment you cloned it anywhere else: those paths only exist on
-your laptop. Everything below is self-contained and runs anywhere.
+This is the upgrade on top of the first rebuild: more categories, questions
+that don't repeat every time you replay, and an actual backend that can run
+on MySQL, PostgreSQL, or MongoDB.
 
-## 1. Run the website (do this first)
+## What's new since v1
 
-1. Copy these three files into one folder together:
-   `index.html`, `styles.css`, `script.js`
-2. Don't just double-click `index.html`. Use a local server so nothing
-   silently breaks:
-   - **VS Code**: install the "Live Server" extension, right-click
-     `index.html` → "Open with Live Server".
-   - **No VS Code**: open a terminal in that folder and run
-     `python3 -m http.server 8000`, then visit `http://localhost:8000`.
-3. Try it: click "Log in", type a username, play a quiz, then check the
-   Leaderboard section — your score is stored in your browser's
-   `localStorage` for now (see step 4 for why).
+- **7 categories** instead of 4: Maths IQ, Family, Science, Intelligence,
+  History, Geography, and Pop Culture & Movies — each with 10-12 questions
+  in its pool.
+- **No more repeat questions.** Every quiz only *shows* 5 questions per
+  play-through, but pulls them randomly from its full pool, and specifically
+  avoids repeating whatever you were just asked last time. Once you've
+  cycled through the whole pool it starts reusing older ones again — you'll
+  never see a quiz refuse to load because it "ran out."
+- **Answer order shuffles too**, so the correct answer isn't always sitting
+  in the same position.
+- **Category filter chips** above the quiz grid.
+- **A real backend** (`/backend`) that connects to MySQL, PostgreSQL, or
+  MongoDB and serves quizzes + leaderboard over an API. The frontend tries
+  the API first and quietly falls back to the local `data/quizzes.json` +
+  browser storage if no backend is running — that's what keeps GitHub Pages
+  working, since GitHub Pages can only serve static files and cannot run a
+  database itself.
 
-### What changed from your old version
-- No more broken `file:///` links — all four quizzes are real and playable.
-- Mobile menu, search bar, login, and quizzes all actually work.
-- New visual identity: deep ink/violet background, gold "spotlight" accent,
-  teal for correct answers, coral for wrong ones — built around the
-  game-show energy of a live quiz, not a generic template.
-- Fully responsive: resize your browser or open it on your phone.
+## Important: how "connect it to all three databases" actually works
 
-## 2. Why three databases
+A live site normally runs on **one** database at a time — that's how every
+real production app works, and it's also the more honest way to demonstrate
+this for your course. What's built here is a backend that can run on any of
+the three, controlled by a single setting (`DB_TYPE` in `backend/.env`). You
+can start it against MySQL, stop it, switch the setting to `postgres`,
+restart, and get identical behavior — proving all three model the same data
+correctly. That's a stronger demonstration than three databases running
+at once ever would be.
 
-Your lecturer is teaching MySQL, PostgreSQL, and MongoDB together because
-they represent two different ways of modeling the *same* data:
+## 1. Try it standalone first (no backend needed)
 
-| | MySQL / PostgreSQL | MongoDB |
-|---|---|---|
-| Model | Relational — data split across tables, joined with foreign keys | Document — related data embedded together |
-| Quiz + its questions | 3 separate tables (`quizzes`, `questions`, `choices`) joined at query time | 1 document per quiz, questions/choices embedded inside it |
-| Best for | Data with strict relationships and constraints (users, scores) | Data that's always read together (a quiz and its questions) |
-| Schema | Fixed — every row must match the table's columns | Flexible — validated with a schema, but easier to change |
+Nothing changes from before — open `index.html` with Live Server or:
+```
+python3 -m http.server 8000
+```
+Play a quiz, finish it, then play the *same* quiz again — you'll get a
+different set of questions. That's all running on `data/quizzes.json` and
+your browser's storage, same as v1.
 
-Both MySQL and PostgreSQL are relational, so their schemas
-(`database/mysql_schema.sql` and `database/postgresql_schema.sql`) look
-almost identical. The real contrast to understand for your course is
-**relational vs. document** — SQL vs. MongoDB.
+## 2. Run the real backend
 
-All three model the same five real-world things:
-`users` → `quizzes` → `questions` → `choices`, plus `attempts` (a record
-of someone finishing a quiz, used to build the leaderboard).
+Pick one database to start with (MySQL is simplest if you're not sure).
 
-## 3. Set up MySQL
+```
+cd backend
+npm install
+cp .env.example .env
+```
 
-1. Install MySQL if you don't have it: https://dev.mysql.com/downloads/
-2. In a terminal:
-   ```
-   mysql -u root -p < database/mysql_schema.sql
-   ```
-3. Check it worked:
-   ```
-   mysql -u root -p -e "USE brainiac_quizzes; SELECT * FROM quizzes;"
-   ```
+Open `.env` and set `DB_TYPE` to `mysql`, `postgres`, or `mongodb`, and fill
+in the matching password fields below it.
 
-## 4. Set up PostgreSQL
+### If DB_TYPE=mysql
+```
+mysql -u root -p < ../database/mysql_schema.sql
+npm run seed
+npm start
+```
 
-1. Install PostgreSQL if you don't have it: https://www.postgresql.org/download/
-2. Create and load the database:
-   ```
-   psql -U postgres -f database/postgresql_schema.sql
-   ```
-3. Check it worked:
-   ```
-   psql -U postgres -d brainiac_quizzes -c "SELECT * FROM leaderboard;"
-   ```
-   Notice PostgreSQL gets a real `VIEW` for the leaderboard — a saved
-   query you can reuse anywhere. MySQL can do this too, but the script
-   keeps it as a plain query so you can compare the raw SQL side by side.
+### If DB_TYPE=postgres
+```
+psql -U postgres -f ../database/postgresql_schema.sql
+npm run seed
+npm start
+```
 
-## 5. Set up MongoDB
+### If DB_TYPE=mongodb
+```
+mongosh brainiac_quizzes ../database/mongodb_setup.js
+npm run seed
+npm start
+```
 
-1. Install MongoDB Community Server:
-   https://www.mongodb.com/try/download/community
-2. Start the MongoDB service, then run:
-   ```
-   mongosh brainiac_quizzes database/mongodb_setup.js
-   ```
-3. Check it worked:
-   ```
-   mongosh brainiac_quizzes --eval "db.quizzes.find().pretty()"
-   ```
+Any of the three will print:
+```
+Brainiac Quizzes API running on http://localhost:4000 (DB_TYPE=mysql)
+```
 
-## 6. (Bonus) Connecting the website to a real database
+## 3. Point the frontend at the backend
 
-Right now the website stores scores in your browser only — that's
-what `getAttempts()` / `saveAttempt()` do in `script.js`. To make scores
-persist for every player, you'd add a small backend server that the
-frontend talks to instead of `localStorage`. `backend-examples/` has one
-tiny Node.js file per database showing the actual connection + leaderboard
-query:
+Open `script.js`, find this line near the top:
+```js
+const API_BASE_URL = "";
+```
+Change it to:
+```js
+const API_BASE_URL = "http://localhost:4000";
+```
+Reload the site. The small dot next to the leaderboard will turn teal and
+say "Connected — scores are saved to the live database" instead of "Demo
+mode." Play a quiz, then check your leaderboard is now reading straight
+from whichever database you picked.
 
-- `node-mysql-example.js` (needs `npm install mysql2`)
-- `node-postgres-example.js` (needs `npm install pg`)
-- `node-mongodb-example.js` (needs `npm install mongodb`)
+To switch databases later: stop the backend, change `DB_TYPE` in `.env`,
+re-run the matching schema + `npm run seed` for that database, restart
+`npm start`. The frontend needs no changes at all — that's the point of
+having one shared `db/index.js` switch.
 
-You don't have to build the full backend for your database assignment —
-the schemas in `database/` already are the deliverable. This is just here
-so you can see, concretely, how the website would eventually talk to
-whichever one you pick.
+## 4. Put GitHub Pages back to demo mode before pushing
+
+GitHub Pages is a static host — it can't run `backend/server.js` for you.
+Before pushing to GitHub, set `API_BASE_URL` back to `""` so the public
+site keeps working in demo mode. If you want the backend live on the
+internet too, that needs a small always-on host like Render or Railway
+(free tiers exist) — ask me if you want to set that up later.
 
 ## File map
 
 ```
 brainiac/
-├── index.html                     ← homepage
-├── styles.css                     ← all styling
-├── script.js                      ← quiz engine, login, leaderboard, search
+├── index.html
+├── styles.css
+├── script.js                      ← API-first, falls back to local data
+├── data/
+│   └── quizzes.json                ← single source of truth for all questions
 ├── database/
 │   ├── mysql_schema.sql
 │   ├── postgresql_schema.sql
 │   └── mongodb_setup.js
-└── backend-examples/
-    ├── node-mysql-example.js
-    ├── node-postgres-example.js
-    └── node-mongodb-example.js
+└── backend/
+    ├── package.json
+    ├── .env.example
+    ├── server.js                   ← Express API
+    ├── seed.js                     ← loads data/quizzes.json into the DB
+    └── db/
+        ├── index.js                ← picks the adapter based on DB_TYPE
+        ├── mysql.js
+        ├── postgres.js
+        └── mongodb.js
 ```
 
-## Next steps for your GitHub repo
+## Adding more questions later
 
-1. Delete the old images with `file:///` links baked into `b.html`.
-2. Replace `b.html`, `Styles.CSS`, `script.js` with the new files here
-   (rename `b.html` to `index.html` so GitHub Pages can serve it directly).
-3. Commit and push:
-   ```
-   git add .
-   git commit -m "Redesign site, add MySQL/PostgreSQL/MongoDB schemas"
-   git push
-   ```
-4. If you want it live on the web for free, enable **GitHub Pages** in
-   your repo settings (Settings → Pages → deploy from `main` branch).
+Just edit `data/quizzes.json` — add new objects to any category's
+`questions` array, or add a whole new category object. Then:
+- Standalone mode picks it up immediately (no rebuild needed).
+- Backend mode needs one re-run of `npm run seed` to push the new
+  questions into whichever database is active.

@@ -1,0 +1,146 @@
+[
+  {
+    "slug": "maths-iq",
+    "tag": "Logic",
+    "title": "IQ Test: Maths",
+    "description": "Sharpen your mental arithmetic and pattern spotting.",
+    "minutes": 3,
+    "round_size": 5,
+    "questions": [
+      { "id": "mi1", "text": "What is 12 x 8?", "options": [{"t":"96","c":true},{"t":"88","c":false},{"t":"108","c":false},{"t":"86","c":false}] },
+      { "id": "mi2", "text": "Next number: 2, 4, 8, 16, ?", "options": [{"t":"24","c":false},{"t":"32","c":true},{"t":"20","c":false},{"t":"18","c":false}] },
+      { "id": "mi3", "text": "What is 15% of 200?", "options": [{"t":"25","c":false},{"t":"35","c":false},{"t":"30","c":true},{"t":"20","c":false}] },
+      { "id": "mi4", "text": "If x + 7 = 15, what is x?", "options": [{"t":"7","c":false},{"t":"9","c":false},{"t":"8","c":true},{"t":"6","c":false}] },
+      { "id": "mi5", "text": "What is the square root of 144?", "options": [{"t":"12","c":true},{"t":"14","c":false},{"t":"11","c":false},{"t":"13","c":false}] },
+      { "id": "mi6", "text": "What is 9 squared?", "options": [{"t":"81","c":true},{"t":"72","c":false},{"t":"91","c":false},{"t":"18","c":false}] },
+      { "id": "mi7", "text": "Next number: 1, 1, 2, 3, 5, ?", "options": [{"t":"6","c":false},{"t":"8","c":true},{"t":"7","c":false},{"t":"9","c":false}] },
+      { "id": "mi8", "text": "What is 100 divided by 4?", "options": [{"t":"20","c":false},{"t":"25","c":true},{"t":"30","c":false},{"t":"24","c":false}] },
+      { "id": "mi9", "text": "How many sides does a hexagon have?", "options": [{"t":"5","c":false},{"t":"6","c":true},{"t":"7","c":false},{"t":"8","c":false}] },
+      { "id": "mi10", "text": "What is 7 x 7?", "options": [{"t":"48","c":false},{"t":"56","c":false},{"t":"49","c":true},{"t":"42","c":false}] },
+      { "id": "mi11", "text": "Odd one out: 2, 3, 5, 9, 11", "options": [{"t":"3","c":false},{"t":"9","c":true},{"t":"5","c":false},{"t":"11","c":false}] },
+      { "id": "mi12", "text": "What is 1/4 as a percentage?", "options": [{"t":"20%","c":false},{"t":"40%","c":false},{"t":"25%","c":true},{"t":"14%","c":false}] }
+    ]
+  },
+  {
+    "slug": "family-quiz",
+    "tag": "Lifestyle",
+    "title": "Family Quiz",
+    "description": "Fun questions about family life, traditions, and bonds.",
+    "minutes": 2,
+    "round_size": 5,
+    "questions": [
+      { "id": "fq1", "text": "A gathering of extended family is often called a...", "options": [{"t":"Reunion","c":true},{"t":"Meeting","c":false},{"t":"Session","c":false},{"t":"Conference","c":false}] },
+      { "id": "fq2", "text": "Which of these is a common family bonding activity?", "options": [{"t":"Filing taxes separately","c":false},{"t":"Eating meals together","c":true},{"t":"Avoiding each other","c":false},{"t":"Working night shifts","c":false}] },
+      { "id": "fq3", "text": "What do many families celebrate yearly to mark someone's birth?", "options": [{"t":"Anniversary","c":false},{"t":"Birthday","c":true},{"t":"Graduation","c":false},{"t":"Promotion","c":false}] },
+      { "id": "fq4", "text": "A person's mother and father together are called their...", "options": [{"t":"Siblings","c":false},{"t":"Parents","c":true},{"t":"Cousins","c":false},{"t":"In-laws","c":false}] },
+      { "id": "fq5", "text": "What is a common name for your parent's parent?", "options": [{"t":"Grandparent","c":true},{"t":"Godparent","c":false},{"t":"Stepparent","c":false},{"t":"Guardian","c":false}] },
+      { "id": "fq6", "text": "Which of these best describes a 'family tree'?", "options": [{"t":"A tree planted at birth","c":false},{"t":"A diagram of family relationships","c":true},{"t":"A type of oak tree","c":false},{"t":"A family business","c":false}] },
+      { "id": "fq7", "text": "Your sibling's child is your...", "options": [{"t":"Nephew or niece","c":true},{"t":"Cousin","c":false},{"t":"Grandchild","c":false},{"t":"In-law","c":false}] },
+      { "id": "fq8", "text": "What's a common way families stay in touch across distances?", "options": [{"t":"Ignoring each other","c":false},{"t":"Video calls","c":true},{"t":"Writing nothing","c":false},{"t":"Moving further apart","c":false}] },
+      { "id": "fq9", "text": "What do many cultures call a family celebration of marriage?", "options": [{"t":"Wedding","c":true},{"t":"Funeral","c":false},{"t":"Retirement","c":false},{"t":"Audit","c":false}] },
+      { "id": "fq10", "text": "Which quality is most associated with strong family bonds?", "options": [{"t":"Trust and communication","c":true},{"t":"Distance","c":false},{"t":"Silence","c":false},{"t":"Competition","c":false}] }
+    ]
+  },
+  {
+    "slug": "science-quiz",
+    "tag": "STEM",
+    "title": "Science Quiz",
+    "description": "From chemistry to biology — how sharp is your science?",
+    "minutes": 3,
+    "round_size": 5,
+    "questions": [
+      { "id": "sc1", "text": "What gas do plants absorb from the atmosphere?", "options": [{"t":"Oxygen","c":false},{"t":"Nitrogen","c":false},{"t":"Carbon dioxide","c":true},{"t":"Hydrogen","c":false}] },
+      { "id": "sc2", "text": "What is H2O more commonly known as?", "options": [{"t":"Salt","c":false},{"t":"Water","c":true},{"t":"Sugar","c":false},{"t":"Oxygen","c":false}] },
+      { "id": "sc3", "text": "Which organ pumps blood around the body?", "options": [{"t":"Lungs","c":false},{"t":"Liver","c":false},{"t":"Heart","c":true},{"t":"Kidney","c":false}] },
+      { "id": "sc4", "text": "What force pulls objects toward Earth?", "options": [{"t":"Magnetism","c":false},{"t":"Gravity","c":true},{"t":"Friction","c":false},{"t":"Tension","c":false}] },
+      { "id": "sc5", "text": "Which planet is known as the Red Planet?", "options": [{"t":"Venus","c":false},{"t":"Mars","c":true},{"t":"Jupiter","c":false},{"t":"Mercury","c":false}] },
+      { "id": "sc6", "text": "What is the basic unit of life?", "options": [{"t":"Atom","c":false},{"t":"Cell","c":true},{"t":"Molecule","c":false},{"t":"Tissue","c":false}] },
+      { "id": "sc7", "text": "What do we call animals that eat only plants?", "options": [{"t":"Carnivores","c":false},{"t":"Herbivores","c":true},{"t":"Omnivores","c":false},{"t":"Predators","c":false}] },
+      { "id": "sc8", "text": "Which gas do humans exhale the most of?", "options": [{"t":"Oxygen","c":false},{"t":"Carbon dioxide","c":true},{"t":"Helium","c":false},{"t":"Nitrogen","c":false}] },
+      { "id": "sc9", "text": "What is the boiling point of water at sea level (Celsius)?", "options": [{"t":"90°C","c":false},{"t":"100°C","c":true},{"t":"120°C","c":false},{"t":"80°C","c":false}] },
+      { "id": "sc10", "text": "Which part of the cell contains genetic material?", "options": [{"t":"Nucleus","c":true},{"t":"Membrane","c":false},{"t":"Cytoplasm","c":false},{"t":"Wall","c":false}] },
+      { "id": "sc11", "text": "What natural phenomenon is caused by the Earth spinning on its axis?", "options": [{"t":"Seasons","c":false},{"t":"Day and night","c":true},{"t":"Tides","c":false},{"t":"Earthquakes","c":false}] },
+      { "id": "sc12", "text": "Which of these is a renewable energy source?", "options": [{"t":"Coal","c":false},{"t":"Solar power","c":true},{"t":"Natural gas","c":false},{"t":"Petroleum","c":false}] }
+    ]
+  },
+  {
+    "slug": "intelligence-quiz",
+    "tag": "Trivia",
+    "title": "Intelligence Quiz",
+    "description": "General knowledge questions covering the world's sharpest minds.",
+    "minutes": 2,
+    "round_size": 5,
+    "questions": [
+      { "id": "iq1", "text": "Who developed the theory of relativity?", "options": [{"t":"Isaac Newton","c":false},{"t":"Albert Einstein","c":true},{"t":"Nikola Tesla","c":false},{"t":"Galileo Galilei","c":false}] },
+      { "id": "iq2", "text": "IQ stands for which of these?", "options": [{"t":"Intelligence Quotient","c":true},{"t":"Instant Question","c":false},{"t":"Inner Quality","c":false},{"t":"Intellect Quality","c":false}] },
+      { "id": "iq3", "text": "Which of these is a sign of critical thinking?", "options": [{"t":"Accepting all claims blindly","c":false},{"t":"Questioning evidence","c":true},{"t":"Ignoring facts","c":false},{"t":"Avoiding new ideas","c":false}] },
+      { "id": "iq4", "text": "Chess is often used to measure which skill?", "options": [{"t":"Strength","c":false},{"t":"Strategic thinking","c":true},{"t":"Speed","c":false},{"t":"Memory only","c":false}] },
+      { "id": "iq5", "text": "Who is known for developing the light bulb?", "options": [{"t":"Thomas Edison","c":true},{"t":"Alexander Bell","c":false},{"t":"Benjamin Franklin","c":false},{"t":"James Watt","c":false}] },
+      { "id": "iq6", "text": "What does 'logic' primarily deal with?", "options": [{"t":"Emotions","c":false},{"t":"Reasoning and argument structure","c":true},{"t":"Random guessing","c":false},{"t":"Physical strength","c":false}] },
+      { "id": "iq7", "text": "Which skill helps most when solving a riddle?", "options": [{"t":"Pattern recognition","c":true},{"t":"Luck","c":false},{"t":"Speed reading only","c":false},{"t":"Guessing randomly","c":false}] },
+      { "id": "iq8", "text": "What is a synonym for 'intelligent'?", "options": [{"t":"Sluggish","c":false},{"t":"Sharp-minded","c":true},{"t":"Careless","c":false},{"t":"Forgetful","c":false}] },
+      { "id": "iq9", "text": "Who is credited with formulating the laws of motion?", "options": [{"t":"Isaac Newton","c":true},{"t":"Charles Darwin","c":false},{"t":"Marie Curie","c":false},{"t":"Louis Pasteur","c":false}] },
+      { "id": "iq10", "text": "A person good at solving abstract problems is often called...", "options": [{"t":"Analytical","c":true},{"t":"Impulsive","c":false},{"t":"Careless","c":false},{"t":"Distracted","c":false}] }
+    ]
+  },
+  {
+    "slug": "history-quiz",
+    "tag": "History",
+    "title": "History Quiz",
+    "description": "Key moments and figures that shaped the world.",
+    "minutes": 3,
+    "round_size": 5,
+    "questions": [
+      { "id": "hq1", "text": "Which ancient civilization built the pyramids of Giza?", "options": [{"t":"Romans","c":false},{"t":"Egyptians","c":true},{"t":"Greeks","c":false},{"t":"Persians","c":false}] },
+      { "id": "hq2", "text": "In what century did World War II take place?", "options": [{"t":"19th century","c":false},{"t":"20th century","c":true},{"t":"21st century","c":false},{"t":"18th century","c":false}] },
+      { "id": "hq3", "text": "Who was the first President of the United States?", "options": [{"t":"Thomas Jefferson","c":false},{"t":"George Washington","c":true},{"t":"Abraham Lincoln","c":false},{"t":"John Adams","c":false}] },
+      { "id": "hq4", "text": "The Great Wall was built primarily in which country?", "options": [{"t":"India","c":false},{"t":"China","c":true},{"t":"Japan","c":false},{"t":"Mongolia","c":false}] },
+      { "id": "hq5", "text": "Which empire was ruled by Julius Caesar?", "options": [{"t":"Roman Empire","c":true},{"t":"Ottoman Empire","c":false},{"t":"British Empire","c":false},{"t":"Persian Empire","c":false}] },
+      { "id": "hq6", "text": "What year did Ghana gain independence?", "options": [{"t":"1957","c":true},{"t":"1963","c":false},{"t":"1945","c":false},{"t":"1970","c":false}] },
+      { "id": "hq7", "text": "The Renaissance period is most associated with which continent?", "options": [{"t":"Africa","c":false},{"t":"Europe","c":true},{"t":"Asia","c":false},{"t":"South America","c":false}] },
+      { "id": "hq8", "text": "Who is known for leading the Indian independence movement through non-violence?", "options": [{"t":"Mahatma Gandhi","c":true},{"t":"Nelson Mandela","c":false},{"t":"Winston Churchill","c":false},{"t":"Kwame Nkrumah","c":false}] },
+      { "id": "hq9", "text": "The Cold War was primarily a standoff between which two powers?", "options": [{"t":"USA and USSR","c":true},{"t":"UK and France","c":false},{"t":"China and Japan","c":false},{"t":"Germany and Italy","c":false}] },
+      { "id": "hq10", "text": "Who was Ghana's first President?", "options": [{"t":"Kwame Nkrumah","c":true},{"t":"Jerry Rawlings","c":false},{"t":"Kofi Annan","c":false},{"t":"John Kufuor","c":false}] }
+    ]
+  },
+  {
+    "slug": "geography-quiz",
+    "tag": "Geography",
+    "title": "Geography Quiz",
+    "description": "Continents, capitals, and everything in between.",
+    "minutes": 3,
+    "round_size": 5,
+    "questions": [
+      { "id": "gq1", "text": "What is the capital of Ghana?", "options": [{"t":"Kumasi","c":false},{"t":"Accra","c":true},{"t":"Takoradi","c":false},{"t":"Tamale","c":false}] },
+      { "id": "gq2", "text": "Which is the largest continent by area?", "options": [{"t":"Africa","c":false},{"t":"Asia","c":true},{"t":"Europe","c":false},{"t":"Australia","c":false}] },
+      { "id": "gq3", "text": "Which river is the longest in the world?", "options": [{"t":"Amazon","c":false},{"t":"Nile","c":true},{"t":"Congo","c":false},{"t":"Volta","c":false}] },
+      { "id": "gq4", "text": "Which desert is the largest hot desert on Earth?", "options": [{"t":"Sahara","c":true},{"t":"Gobi","c":false},{"t":"Kalahari","c":false},{"t":"Atacama","c":false}] },
+      { "id": "gq5", "text": "Mount Everest is located in which mountain range?", "options": [{"t":"Andes","c":false},{"t":"Himalayas","c":true},{"t":"Alps","c":false},{"t":"Rockies","c":false}] },
+      { "id": "gq6", "text": "Which country is known as the Land of the Rising Sun?", "options": [{"t":"China","c":false},{"t":"Japan","c":true},{"t":"South Korea","c":false},{"t":"Thailand","c":false}] },
+      { "id": "gq7", "text": "Which ocean is the largest?", "options": [{"t":"Atlantic","c":false},{"t":"Indian","c":false},{"t":"Pacific","c":true},{"t":"Arctic","c":false}] },
+      { "id": "gq8", "text": "Which African country is entirely surrounded by South Africa?", "options": [{"t":"Lesotho","c":true},{"t":"Eswatini","c":false},{"t":"Botswana","c":false},{"t":"Zimbabwe","c":false}] },
+      { "id": "gq9", "text": "Which country has the most population in the world?", "options": [{"t":"USA","c":false},{"t":"India","c":true},{"t":"China","c":false},{"t":"Indonesia","c":false}] },
+      { "id": "gq10", "text": "Which line divides the Earth into Northern and Southern Hemispheres?", "options": [{"t":"Prime Meridian","c":false},{"t":"Equator","c":true},{"t":"Tropic of Cancer","c":false},{"t":"International Date Line","c":false}] }
+    ]
+  },
+  {
+    "slug": "pop-culture-quiz",
+    "tag": "Entertainment",
+    "title": "Pop Culture & Movies",
+    "description": "Music, movies, and moments everyone's talking about.",
+    "minutes": 2,
+    "round_size": 5,
+    "questions": [
+      { "id": "pc1", "text": "What do you call a movie that continues a story from an earlier film?", "options": [{"t":"Prequel","c":false},{"t":"Sequel","c":true},{"t":"Remake","c":false},{"t":"Spin-off","c":false}] },
+      { "id": "pc2", "text": "Which award is considered the top honor in the film industry?", "options": [{"t":"Grammy","c":false},{"t":"Oscar","c":true},{"t":"Emmy","c":false},{"t":"Tony","c":false}] },
+      { "id": "pc3", "text": "What is the term for a song that reaches number one on the charts?", "options": [{"t":"Chart-topper","c":true},{"t":"B-side","c":false},{"t":"Remix","c":false},{"t":"Cover","c":false}] },
+      { "id": "pc4", "text": "Which of these describes a 'plot twist'?", "options": [{"t":"A predictable ending","c":false},{"t":"An unexpected turn in the story","c":true},{"t":"The opening scene","c":false},{"t":"A movie's soundtrack","c":false}] },
+      { "id": "pc5", "text": "What do we call an actor who plays the main character?", "options": [{"t":"Extra","c":false},{"t":"Protagonist","c":true},{"t":"Understudy","c":false},{"t":"Director","c":false}] },
+      { "id": "pc6", "text": "Animated films are primarily created using...", "options": [{"t":"Live actors only","c":false},{"t":"Drawings or computer animation","c":true},{"t":"Radio scripts","c":false},{"t":"Stage plays","c":false}] },
+      { "id": "pc7", "text": "What is a 'blockbuster'?", "options": [{"t":"A low-budget indie film","c":false},{"t":"A hugely popular, high-earning film","c":true},{"t":"A short film","c":false},{"t":"A documentary","c":false}] },
+      { "id": "pc8", "text": "Which term describes music played live without recording?", "options": [{"t":"Live performance","c":true},{"t":"Studio session","c":false},{"t":"Remastered track","c":false},{"t":"Instrumental","c":false}] },
+      { "id": "pc9", "text": "What do fans call the community around a show or artist?", "options": [{"t":"Fandom","c":true},{"t":"Cast","c":false},{"t":"Crew","c":false},{"t":"Studio","c":false}] },
+      { "id": "pc10", "text": "A movie critic's review typically focuses on...", "options": [{"t":"Ticket prices","c":false},{"t":"The quality of the film","c":true},{"t":"Cinema snacks","c":false},{"t":"Parking availability","c":false}] }
+    ]
+  }
+]

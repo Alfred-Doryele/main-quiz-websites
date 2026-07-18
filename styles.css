@@ -205,6 +205,29 @@ button{font-family:inherit;cursor:pointer;}
 }
 .section-sub{color:var(--muted);margin:0 0 34px;max-width:60ch;}
 
+/* ---------- filter chips ---------- */
+.filter-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:28px;}
+.filter-chip{
+  background:var(--ink-800);border:1px solid rgba(255,255,255,0.1);
+  color:var(--muted);padding:8px 18px;border-radius:999px;
+  font-size:0.85rem;font-weight:600;transition:all .15s ease;
+}
+.filter-chip:hover{border-color:var(--gold);color:var(--chalk);}
+.filter-chip.active{background:var(--gold);border-color:var(--gold);color:var(--ink-900);}
+
+/* ---------- data source pill ---------- */
+.data-source-pill{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:var(--font-mono);font-size:0.75rem;color:var(--muted-2);
+  margin:-18px 0 30px;
+}
+.data-source-pill::before{
+  content:"";width:8px;height:8px;border-radius:50%;
+  background:var(--muted-2);
+}
+.data-source-pill.live::before{background:var(--teal);box-shadow:0 0 8px var(--teal);}
+.data-source-pill.local::before{background:var(--gold);}
+
 /* ---------- quiz grid ---------- */
 .quiz-grid{
   display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:22px;
