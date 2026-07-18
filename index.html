@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brainiac Quizzes — Turn boredom into brilliance</title>
+<meta name="description" content="Brainiac Quizzes: fast, fun, competitive quizzes with a live leaderboard.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="marquee-rail" aria-hidden="true">
+  <div class="marquee-track">
+    <span>ROUND STARTS IN 00:15</span><span>•</span>
+    <span>TOP SCORE THIS WEEK: 980 PTS</span><span>•</span>
+    <span>4 CATEGORIES LIVE NOW</span><span>•</span>
+    <span>NEW: SCIENCE QUIZ ADDED</span><span>•</span>
+    <span>ROUND STARTS IN 00:15</span><span>•</span>
+    <span>TOP SCORE THIS WEEK: 980 PTS</span><span>•</span>
+    <span>4 CATEGORIES LIVE NOW</span><span>•</span>
+    <span>NEW: SCIENCE QUIZ ADDED</span><span>•</span>
+  </div>
+</div>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a class="logo" href="#home">
+      <span class="logo-mark">B</span>
+      <span class="logo-text">Brainiac<em>Quizzes</em></span>
+    </a>
+
+    <nav class="main-nav" id="mainNav">
+      <ul>
+        <li><a href="#home">Home</a></li>
+        <li><a href="#quizzes">Quizzes</a></li>
+        <li><a href="#leaderboard">Leaderboard</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </nav>
+
+    <div class="header-actions">
+      <div class="search-wrap">
+        <input type="text" id="searchBar" placeholder="Search a quiz…" onkeyup="searchQuizzes()" aria-label="Search quizzes">
+      </div>
+      <button class="btn btn-ghost" id="authBtn" onclick="openLoginModal()">Log in</button>
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<div id="loginModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+  <div class="modal-content">
+    <button class="close" onclick="closeLoginModal()" aria-label="Close">&times;</button>
+    <p class="eyebrow">Player account</p>
+    <h2 id="loginTitle">Log in or sign up</h2>
+    <p class="modal-sub">One name, no password games. Your scores follow you on this device.</p>
+    <label for="username">Username</label>
+    <input type="text" id="username" placeholder="e.g. QuizWiz_Alfred" autocomplete="off">
+    <button class="btn btn-primary btn-block" onclick="loginUser()">Enter the arena</button>
+    <p class="modal-note" id="loginNote"></p>
+  </div>
+</div>
+
+<div id="quizModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="quizTitle">
+  <div class="modal-content modal-quiz">
+    <button class="close" onclick="closeQuizModal()" aria-label="Close">&times;</button>
+    <div id="quizPlay"></div>
+  </div>
+</div>
+
+<main>
+
+  <section id="home" class="hero">
+    <div class="hero-inner">
+      <p class="eyebrow eyebrow-hero">Live now &middot; 4 categories &middot; instant scoring</p>
+      <h1 class="hero-title">Turning boredom<br> into <span class="hero-highlight">brilliance,</span><br> one quiz at a time.</h1>
+      <p class="hero-sub">Test your knowledge, race the clock, and climb the leaderboard. No downloads, no fine print — just questions worth answering.</p>
+      <div class="hero-actions">
+        <button class="btn btn-primary btn-lg" onclick="document.getElementById('quizzes').scrollIntoView({behavior:'smooth'})">Start a quiz</button>
+        <button class="btn btn-outline btn-lg" onclick="document.getElementById('leaderboard').scrollIntoView({behavior:'smooth'})">See leaderboard</button>
+      </div>
+      <div class="hero-stats">
+        <div class="stat"><span class="stat-num" id="statQuizzes">4</span><span class="stat-label">Categories</span></div>
+        <div class="stat"><span class="stat-num" id="statPlayers">—</span><span class="stat-label">Players today</span></div>
+        <div class="stat"><span class="stat-num" id="statTop">—</span><span class="stat-label">Top score</span></div>
+      </div>
+    </div>
+    <div class="hero-card" aria-hidden="true">
+      <div class="score-chip">SCORE</div>
+      <div class="hero-card-inner">
+        <p class="hero-card-q">Which planet has the most moons in our solar system?</p>
+        <div class="hero-card-opt correct">Saturn</div>
+        <div class="hero-card-opt">Jupiter</div>
+        <div class="hero-card-opt">Neptune</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="quizzes" class="section">
+    <p class="eyebrow">Pick your round</p>
+    <h2 class="section-title">Trending quizzes</h2>
+    <div class="quiz-grid" id="quizGrid"><!-- injected by script.js --></div>
+    <p class="no-results" id="noResults" hidden>No quizzes match your search. Try “science” or “family.”</p>
+  </section>
+
+  <section id="leaderboard" class="section section-alt">
+    <p class="eyebrow">Bragging rights</p>
+    <h2 class="section-title">Leaderboard</h2>
+    <p class="section-sub">Top scores stored on this device. Play a quiz above to claim a spot.</p>
+    <div class="leaderboard-wrap">
+      <table class="leaderboard-table">
+        <thead>
+          <tr><th>Rank</th><th>Player</th><th>Category</th><th>Score</th></tr>
+        </thead>
+        <tbody id="leaderboardBody"><!-- injected by script.js --></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="section section-cta">
+    <div class="cta-box">
+      <h2>Ready to test yourself?</h2>
+      <p>Four rounds. One leaderboard. Zero downloads.</p>
+      <button class="btn btn-primary btn-lg" onclick="document.getElementById('quizzes').scrollIntoView({behavior:'smooth'})">Play now</button>
+    </div>
+  </section>
+
+</main>
+
+<footer id="contact" class="site-footer">
+  <div class="footer-grid">
+    <div>
+      <div class="logo footer-logo">
+        <span class="logo-mark">B</span>
+        <span class="logo-text">Brainiac<em>Quizzes</em></span>
+      </div>
+      <p class="footer-tag">Your daily source for fun, high-quality quizzes.</p>
+    </div>
+    <div>
+      <h3>Contact</h3>
+      <p><a href="mailto:doryelealfred4@gmail.com">doryelealfred4@gmail.com</a></p>
+      <p><a href="tel:+233584788173">+233 584 788 173</a></p>
+    </div>
+    <div>
+      <h3>Explore</h3>
+      <p><a href="#quizzes">Quizzes</a></p>
+      <p><a href="#leaderboard">Leaderboard</a></p>
+    </div>
+  </div>
+  <p class="footer-copy">&copy; 2026 Brainiac Quizzes. All rights reserved.</p>
+</footer>
+
+<script defer src="script.js"></script>
+</body>
+</html>
