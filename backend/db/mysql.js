@@ -13,6 +13,7 @@ async function init() {
     user: process.env.MYSQL_USER,
     password: process.env.MYSQL_PASSWORD,
     database: process.env.MYSQL_DATABASE,
+    ssl: process.env.MYSQL_SSL === "true" ? { rejectUnauthorized: false } : undefined,
   });
   await pool.query("SELECT 1"); // fail fast if the connection is bad
   console.log("Connected to MySQL");
