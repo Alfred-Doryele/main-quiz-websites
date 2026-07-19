@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create an account — Brainiac Quizzes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="auth-page">
+  <a class="logo" href="index.html">
+    <span class="logo-mark">B</span>
+    <span class="logo-text">Brainiac<em>Quizzes</em></span>
+  </a>
+  <div class="auth-card">
+    <p class="eyebrow">New here?</p>
+    <h2>Create an account</h2>
+    <p class="modal-sub">Track your scores and climb the leaderboard.</p>
+
+    <div id="authOfflineNotice" class="auth-offline-notice" hidden>
+      No live backend is connected right now, so new accounts can't be created from this copy of the site.
+      <a href="index.html">Go back and play as a guest instead</a>.
+    </div>
+
+    <form id="authForm">
+      <label for="authUsername">Username</label>
+      <input type="text" id="authUsername" autocomplete="username" required minlength="2">
+      <label for="authEmail">Email</label>
+      <input type="email" id="authEmail" autocomplete="email" required>
+      <label for="authPassword">Password (6+ characters)</label>
+      <input type="password" id="authPassword" autocomplete="new-password" required minlength="6">
+      <button type="submit" class="btn btn-primary btn-block">Create account</button>
+      <p class="modal-note" id="authNote"></p>
+      <p class="modal-links"><a href="login.html">Already have an account? Log in</a></p>
+    </form>
+
+    <a class="auth-back" href="index.html">&larr; Back to Brainiac Quizzes</a>
+  </div>
+</div>
+<script src="auth.js"></script>
+<script>initRegisterPage();</script>
+</body>
+</html>

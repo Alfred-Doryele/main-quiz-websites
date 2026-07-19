@@ -44,12 +44,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   mainNav.querySelectorAll("a").forEach((link) =>
     link.addEventListener("click", () => mainNav.classList.remove("open"))
   );
-
-  const resetToken = new URLSearchParams(window.location.search).get("reset_token");
-  if (resetToken) {
-    openLoginModal();
-    renderAuthView("reset", { token: resetToken });
-  }
 });
 
 /* ---------------- data loading (API first, local file fallback) ---------------- */
@@ -365,7 +359,7 @@ function updateHeaderForUser() {
     };
   } else {
     btn.textContent = "Log in";
-    btn.onclick = openLoginModal;
+    btn.onclick = () => (window.location.href = "login.html");
   }
 }
 
@@ -373,179 +367,6 @@ function escapeHtml(str) {
   const div = document.createElement("div");
   div.textContent = str;
   return div.innerHTML;
-}
-
-/* ---------------- auth: login / register / forgot / reset / guest ---------------- */
-function openLoginModal() {
-  document.getElementById("loginModal").classList.add("open");
-  renderAuthView(usingLiveApi ? "login" : "guest");
-}
-function closeLoginModal() {
-  document.getElementById("loginModal").classList.remove("open");
-}
-
-async function apiPost(path, body) {
-  const res = await fetch(`${API_BASE_URL}${path}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error || "Something went wrong");
-  return data;
-}
-
-function renderAuthView(view, ctx = {}) {
-  const el = document.getElementById("authView");
-
-  if (view === "guest") {
-    el.innerHTML = `
-      <p class="eyebrow">Quick play</p>
-      <h2>Play as a guest</h2>
-      <p class="modal-sub">No backend is connected right now, so this device just remembers a name for the leaderboard. Real accounts with passwords and password recovery need the live database connected — see the project README.</p>
-      <label for="authUsername">Username</label>
-      <input type="text" id="authUsername" placeholder="e.g. QuizWiz_Alfred" autocomplete="off">
-      <button class="btn btn-primary btn-block" id="authSubmit">Enter the arena</button>
-      <p class="modal-note" id="authNote"></p>
-    `;
-    document.getElementById("authSubmit").addEventListener("click", () => {
-      const name = document.getElementById("authUsername").value.trim();
-      const note = document.getElementById("authNote");
-      if (name.length < 2) {
-        note.textContent = "Enter at least 2 characters.";
-        note.style.color = "var(--coral)";
-        return;
-      }
-      setCurrentUser(name);
-      note.textContent = `Welcome, ${name}! You're ready to play.`;
-      note.style.color = "var(--teal)";
-      updateHeaderForUser();
-      setTimeout(closeLoginModal, 700);
-    });
-    return;
-  }
-
-  if (view === "login") {
-    el.innerHTML = `
-      <p class="eyebrow">Player account</p>
-      <h2>Log in</h2>
-      <label for="authIdentifier">Username or email</label>
-      <input type="text" id="authIdentifier" autocomplete="username">
-      <label for="authPassword">Password</label>
-      <input type="password" id="authPassword" autocomplete="current-password">
-      <button class="btn btn-primary btn-block" id="authSubmit">Log in</button>
-      <p class="modal-note" id="authNote"></p>
-      <p class="modal-links">
-        <a href="#" id="goRegister">Create an account</a> &middot;
-        <a href="#" id="goForgot">Forgot password?</a>
-      </p>
-    `;
-    document.getElementById("goRegister").addEventListener("click", (e) => { e.preventDefault(); renderAuthView("register"); });
-    document.getElementById("goForgot").addEventListener("click", (e) => { e.preventDefault(); renderAuthView("forgot"); });
-    document.getElementById("authSubmit").addEventListener("click", async () => {
-      const identifier = document.getElementById("authIdentifier").value.trim();
-      const password = document.getElementById("authPassword").value;
-      const note = document.getElementById("authNote");
-      try {
-        const user = await apiPost("/api/login", { identifier, password });
-        setCurrentUser(user.username);
-        note.style.color = "var(--teal)";
-        note.textContent = `Welcome back, ${user.username}!`;
-        updateHeaderForUser();
-        setTimeout(closeLoginModal, 700);
-      } catch (err) {
-        note.style.color = "var(--coral)";
-        note.textContent = err.message;
-      }
-    });
-    return;
-  }
-
-  if (view === "register") {
-    el.innerHTML = `
-      <p class="eyebrow">New here?</p>
-      <h2>Create an account</h2>
-      <label for="authUsername">Username</label>
-      <input type="text" id="authUsername" autocomplete="username">
-      <label for="authEmail">Email</label>
-      <input type="email" id="authEmail" autocomplete="email">
-      <label for="authPassword">Password (6+ characters)</label>
-      <input type="password" id="authPassword" autocomplete="new-password">
-      <button class="btn btn-primary btn-block" id="authSubmit">Create account</button>
-      <p class="modal-note" id="authNote"></p>
-      <p class="modal-links"><a href="#" id="goLogin">Already have an account? Log in</a></p>
-    `;
-    document.getElementById("goLogin").addEventListener("click", (e) => { e.preventDefault(); renderAuthView("login"); });
-    document.getElementById("authSubmit").addEventListener("click", async () => {
-      const username = document.getElementById("authUsername").value.trim();
-      const email = document.getElementById("authEmail").value.trim();
-      const password = document.getElementById("authPassword").value;
-      const note = document.getElementById("authNote");
-      try {
-        await apiPost("/api/register", { username, email, password });
-        note.style.color = "var(--teal)";
-        note.textContent = "Account created! You can log in now.";
-        setTimeout(() => renderAuthView("login"), 900);
-      } catch (err) {
-        note.style.color = "var(--coral)";
-        note.textContent = err.message;
-      }
-    });
-    return;
-  }
-
-  if (view === "forgot") {
-    el.innerHTML = `
-      <p class="eyebrow">Password recovery</p>
-      <h2>Reset your password</h2>
-      <p class="modal-sub">Enter your account email and we'll send a reset link.</p>
-      <label for="authEmail">Email</label>
-      <input type="email" id="authEmail" autocomplete="email">
-      <button class="btn btn-primary btn-block" id="authSubmit">Send reset link</button>
-      <p class="modal-note" id="authNote"></p>
-      <p class="modal-links"><a href="#" id="goLogin">Back to log in</a></p>
-    `;
-    document.getElementById("goLogin").addEventListener("click", (e) => { e.preventDefault(); renderAuthView("login"); });
-    document.getElementById("authSubmit").addEventListener("click", async () => {
-      const email = document.getElementById("authEmail").value.trim();
-      const note = document.getElementById("authNote");
-      try {
-        const result = await apiPost("/api/forgot-password", { email });
-        note.style.color = "var(--teal)";
-        note.textContent = result.message;
-      } catch (err) {
-        note.style.color = "var(--coral)";
-        note.textContent = err.message;
-      }
-    });
-    return;
-  }
-
-  if (view === "reset") {
-    el.innerHTML = `
-      <p class="eyebrow">Password recovery</p>
-      <h2>Set a new password</h2>
-      <label for="authPassword">New password (6+ characters)</label>
-      <input type="password" id="authPassword" autocomplete="new-password">
-      <button class="btn btn-primary btn-block" id="authSubmit">Set new password</button>
-      <p class="modal-note" id="authNote"></p>
-    `;
-    document.getElementById("authSubmit").addEventListener("click", async () => {
-      const newPassword = document.getElementById("authPassword").value;
-      const note = document.getElementById("authNote");
-      try {
-        await apiPost("/api/reset-password", { token: ctx.token, newPassword });
-        note.style.color = "var(--teal)";
-        note.textContent = "Password updated. You can log in now.";
-        window.history.replaceState({}, "", window.location.pathname);
-        setTimeout(() => renderAuthView("login"), 900);
-      } catch (err) {
-        note.style.color = "var(--coral)";
-        note.textContent = err.message;
-      }
-    });
-    return;
-  }
 }
 
 /* ---------------- quiz engine ---------------- */
@@ -560,8 +381,16 @@ function startQuiz(slug) {
   if (!quiz) return;
 
   if (!getCurrentUser()) {
-    openLoginModal();
-    return;
+    if (usingLiveApi) {
+      window.location.href = "login.html";
+      return;
+    }
+    // Offline/demo mode: no backend to register a real account against,
+    // so just capture a quick display name for the leaderboard.
+    const name = window.prompt("No live database is connected, so this is demo mode. Enter a name to play:");
+    if (!name || name.trim().length < 2) return;
+    setCurrentUser(name.trim());
+    updateHeaderForUser();
   }
 
   activeQuiz = quiz;

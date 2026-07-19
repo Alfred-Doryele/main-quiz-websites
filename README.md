@@ -190,3 +190,22 @@ Right now, your database and backend only run when your laptop does. To fix that
    - Render gives you a permanent URL like `https://your-app.onrender.com`.
 
 3. **Frontend**: set `API_BASE_URL` in `script.js` to that Render URL, then push to GitHub. Now anyone visiting your GitHub Pages link is talking to a database that's live even when your laptop is off — the only tradeoff is the first request after 15 minutes of no traffic takes 30-60 seconds to wake the backend up.
+
+---
+
+# v4 additions: dedicated auth pages and expanded question banks
+
+## Login/register are now real pages, not a modal
+
+- `login.html`, `register.html`, `forgot-password.html`, `reset-password.html` — each a standalone page with its own URL, matching the site's visual style.
+- Shared logic lives in `auth.js` (new file) — keep `API_BASE_URL` at the top of `auth.js` in sync with the one in `script.js`.
+- If no backend is connected, these pages show a clear notice instead of a broken form, and point back to guest play on the homepage.
+- The homepage's "Log in" button and the "Play" button (when logged out) now link to `login.html` instead of opening a modal. In offline/demo mode, "Play" still offers a quick guest-name prompt so the standalone site keeps working without a backend.
+
+## Expanded question banks
+
+- The 7 main categories went from ~10-12 questions each to **30-32 each** (214 total).
+- Bible **General Knowledge** and **Riddles** went from 20 each to **60 each**.
+- The 66 individual Bible books are still at 5 questions each (330 total) — expanding those to 15-20 each is a much larger content pass (roughly 700-900 more questions) that's best tackled as its own follow-up given the sheer number of books.
+
+All of this still uses the same shuffle + no-repeat logic from v2, so bigger pools mean more genuinely different rounds before questions start repeating.

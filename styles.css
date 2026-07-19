@@ -228,6 +228,25 @@ button{font-family:inherit;cursor:pointer;}
 .data-source-pill.live::before{background:var(--teal);box-shadow:0 0 8px var(--teal);}
 .data-source-pill.local::before{background:var(--gold);}
 
+/* ---------- standalone auth pages ---------- */
+.auth-page{
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:40px 20px;
+}
+.auth-page .logo{margin-bottom:32px;justify-content:center;}
+.auth-card{
+  background:var(--ink-800);border:1px solid rgba(255,255,255,0.1);
+  border-radius:var(--radius-lg);padding:40px;max-width:420px;width:100%;
+  box-shadow:var(--shadow-card);
+}
+.auth-card h2{font-family:var(--font-display);font-size:1.6rem;margin:0 0 8px;}
+.auth-back{display:block;text-align:center;margin-top:22px;color:var(--muted);font-size:0.85rem;}
+.auth-back:hover{color:var(--gold);}
+.auth-offline-notice{
+  background:rgba(245,185,66,0.1);border:1px solid rgba(245,185,66,0.3);
+  border-radius:var(--radius-sm);padding:16px;font-size:0.88rem;color:var(--muted);margin-bottom:10px;
+}
+
 /* ---------- bible quiz zone ---------- */
 .bible-tabs{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px;}
 .bible-search{

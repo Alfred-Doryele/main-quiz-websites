@@ -16,7 +16,7 @@ function getTransport() {
 
 async function sendResetEmail({ to, username, token }) {
   const appUrl = process.env.APP_URL || "http://localhost:8000";
-  const resetLink = `${appUrl}?reset_token=${token}`;
+  const resetLink = `${appUrl}/reset-password.html?reset_token=${token}`;
   const transport = getTransport();
 
   if (!transport) {

@@ -45,20 +45,13 @@
       <div class="search-wrap">
         <input type="text" id="searchBar" placeholder="Search a quiz…" onkeyup="searchQuizzes()" aria-label="Search quizzes">
       </div>
-      <button class="btn btn-ghost" id="authBtn" onclick="openLoginModal()">Log in</button>
+      <button class="btn btn-ghost" id="authBtn" onclick="window.location.href='login.html'">Log in</button>
       <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">
         <span></span><span></span><span></span>
       </button>
     </div>
   </div>
 </header>
-
-<div id="loginModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
-  <div class="modal-content">
-    <button class="close" onclick="closeLoginModal()" aria-label="Close">&times;</button>
-    <div id="authView"><!-- injected by script.js: login / register / forgot / reset --></div>
-  </div>
-</div>
 
 <div id="quizModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="quizTitle">
   <div class="modal-content modal-quiz">
