@@ -21,12 +21,16 @@ db.createCollection("users", {
       properties: {
         username: { bsonType: "string", description: "must be a string, required" },
         email: { bsonType: "string" },
+        password_hash: { bsonType: "string" },
+        reset_token: { bsonType: "string" },
+        reset_token_expires: { bsonType: "date" },
         created_at: { bsonType: "date" },
       },
     },
   },
 });
 db.users.createIndex({ username: 1 }, { unique: true });
+db.users.createIndex({ email: 1 }, { unique: true, sparse: true });
 
 // ---------- quizzes (questions + choices embedded) ----------
 db.createCollection("quizzes", {

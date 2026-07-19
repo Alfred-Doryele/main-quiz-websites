@@ -35,6 +35,7 @@
       <ul>
         <li><a href="#home">Home</a></li>
         <li><a href="#quizzes">Quizzes</a></li>
+        <li><a href="#bible-zone">Bible Quiz</a></li>
         <li><a href="#leaderboard">Leaderboard</a></li>
         <li><a href="#contact">Contact</a></li>
       </ul>
@@ -55,13 +56,7 @@
 <div id="loginModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
   <div class="modal-content">
     <button class="close" onclick="closeLoginModal()" aria-label="Close">&times;</button>
-    <p class="eyebrow">Player account</p>
-    <h2 id="loginTitle">Log in or sign up</h2>
-    <p class="modal-sub">One name, no password games. Your scores follow you on this device.</p>
-    <label for="username">Username</label>
-    <input type="text" id="username" placeholder="e.g. QuizWiz_Alfred" autocomplete="off">
-    <button class="btn btn-primary btn-block" onclick="loginUser()">Enter the arena</button>
-    <p class="modal-note" id="loginNote"></p>
+    <div id="authView"><!-- injected by script.js: login / register / forgot / reset --></div>
   </div>
 </div>
 
@@ -108,11 +103,20 @@
     <p class="no-results" id="noResults" hidden>No quizzes match your search. Try “science” or “family.”</p>
   </section>
 
+  <section id="bible-zone" class="section section-alt">
+    <p class="eyebrow">📖 Genesis to Revelation</p>
+    <h2 class="section-title">Bible Quiz Zone</h2>
+    <p class="section-sub">Pick a single book to be quizzed on just that book, or try General Knowledge and the Riddles round. Questions mix basic and advanced difficulty.</p>
+    <div class="bible-tabs" id="bibleTabs"><!-- injected by script.js --></div>
+    <input type="text" id="bibleSearch" class="bible-search" placeholder="Search a book… e.g. Genesis, Psalms, Romans" onkeyup="renderBibleBooks()">
+    <div class="bible-book-grid" id="bibleBookGrid"><!-- injected by script.js --></div>
+  </section>
+
   <section id="leaderboard" class="section section-alt">
     <p class="eyebrow">Bragging rights</p>
     <h2 class="section-title">Leaderboard</h2>
     <p class="section-sub" id="leaderboardSub">Top scores stored on this device. Play a quiz above to claim a spot.</p>
-    <p class="data-source-pill" id="dataSourceNote">Checking connection…</p>
+    <p class="data-source-pill" id="dataSourceNote" title="This just tells you whether scores are being saved to a real database or only to this browser. It is not a button.">Checking connection…</p>
     <div class="leaderboard-wrap">
       <table class="leaderboard-table">
         <thead>

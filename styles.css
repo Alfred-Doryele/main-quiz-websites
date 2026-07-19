@@ -228,6 +228,32 @@ button{font-family:inherit;cursor:pointer;}
 .data-source-pill.live::before{background:var(--teal);box-shadow:0 0 8px var(--teal);}
 .data-source-pill.local::before{background:var(--gold);}
 
+/* ---------- bible quiz zone ---------- */
+.bible-tabs{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px;}
+.bible-search{
+  width:100%;max-width:420px;display:block;margin-bottom:26px;
+  background:var(--ink-800);border:1px solid rgba(255,255,255,0.1);
+  color:var(--chalk);padding:11px 16px;border-radius:999px;font-size:0.9rem;
+}
+.bible-search::placeholder{color:var(--muted-2);}
+.bible-search:focus{border-color:var(--gold);}
+.bible-book-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;
+}
+.bible-book-card{
+  display:flex;align-items:center;gap:12px;
+  background:var(--ink-800);border:1px solid rgba(255,255,255,0.07);
+  border-radius:var(--radius-sm);padding:14px 16px;
+  transition:border-color .2s ease;
+}
+.bible-book-card:hover{border-color:var(--gold);}
+.bible-book-icon{width:34px;height:34px;flex-shrink:0;color:var(--gold);}
+.bible-book-icon svg{width:100%;height:100%;}
+.bible-book-info{flex:1;min-width:0;}
+.bible-book-info h4{margin:0 0 2px;font-size:0.95rem;}
+.bible-book-info p{margin:0;font-size:0.75rem;color:var(--muted-2);}
+.bible-book-card .btn{padding:8px 16px;font-size:0.8rem;flex-shrink:0;}
+
 /* ---------- quiz grid ---------- */
 .quiz-grid{
   display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:22px;
@@ -248,8 +274,15 @@ button{font-family:inherit;cursor:pointer;}
 .quiz-card-media{
   height:150px;background:linear-gradient(135deg,var(--ink-700),var(--ink-600));
   display:flex;align-items:center;justify-content:center;
-  font-family:var(--font-display);font-size:2.4rem;color:rgba(255,255,255,0.14);
+  color:var(--gold);
+  position:relative;overflow:hidden;
 }
+.quiz-card-media::after{
+  content:"";position:absolute;inset:0;
+  background:radial-gradient(120px 80px at 30% 20%, rgba(245,185,66,0.16), transparent 70%);
+}
+.quiz-card-media svg{width:56px;height:56px;opacity:0.9;position:relative;z-index:1;
+  filter:drop-shadow(0 0 10px rgba(245,185,66,0.35));}
 .quiz-card-body{padding:20px;display:flex;flex-direction:column;gap:10px;flex:1;}
 .quiz-card-tag{
   font-family:var(--font-mono);font-size:0.68rem;letter-spacing:0.08em;
@@ -334,6 +367,9 @@ button{font-family:inherit;cursor:pointer;}
 }
 .modal-content input:focus{border-color:var(--gold);}
 .modal-note{font-size:0.82rem;color:var(--teal);margin:14px 0 0;min-height:1em;}
+.modal-links{font-size:0.85rem;color:var(--muted);margin:16px 0 0;text-align:center;}
+.modal-links a{color:var(--gold);font-weight:600;}
+.modal-links a:hover{text-decoration:underline;}
 .close{
   position:absolute;top:16px;right:20px;background:none;border:none;
   color:var(--muted);font-size:1.6rem;line-height:1;
@@ -342,8 +378,12 @@ button{font-family:inherit;cursor:pointer;}
 .modal-quiz{max-width:560px;}
 
 /* ---------- quiz-play (injected) ---------- */
-.qp-progress{height:6px;background:var(--ink-900);border-radius:999px;overflow:hidden;margin-bottom:22px;}
+.qp-progress{height:6px;background:var(--ink-900);border-radius:999px;overflow:hidden;margin-bottom:14px;}
 .qp-progress-bar{height:100%;background:var(--gold);transition:width .3s ease;}
+.qp-meta-row{display:flex;align-items:center;gap:14px;margin-bottom:22px;}
+.qp-meta-row .qp-tag{margin:0;flex:1;}
+.qp-timer{width:70px;height:6px;background:var(--ink-900);border-radius:999px;overflow:hidden;flex-shrink:0;}
+.qp-timer-bar{height:100%;background:var(--coral);transition:width .1s linear;}
 .qp-tag{font-family:var(--font-mono);font-size:0.7rem;color:var(--teal);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;}
 .qp-question{font-size:1.2rem;font-weight:700;margin:0 0 22px;}
 .qp-options{display:flex;flex-direction:column;gap:10px;margin-bottom:20px;}
@@ -357,6 +397,9 @@ button{font-family:inherit;cursor:pointer;}
 .qp-opt.qp-wrong{background:rgba(255,107,94,0.16);border-color:var(--coral);}
 .qp-opt:disabled{cursor:default;}
 .qp-footer{display:flex;justify-content:space-between;align-items:center;font-family:var(--font-mono);font-size:0.85rem;color:var(--muted);}
+.qp-streak{color:var(--coral);font-weight:700;}
+.qp-result-badge{font-size:3rem;line-height:1;margin-top:6px;}
+.qp-result-badge-label{font-family:var(--font-mono);font-size:0.8rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--teal);margin:0 0 10px;}
 .qp-result{text-align:center;padding:10px 0;}
 .qp-result-score{font-family:var(--font-display);font-size:3rem;color:var(--gold);margin:8px 0;}
 .qp-result-label{color:var(--muted);margin-bottom:26px;}

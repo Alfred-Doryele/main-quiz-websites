@@ -1,5 +1,7 @@
 // PostgreSQL adapter — same shape as the MySQL and MongoDB adapters.
 const { Pool } = require("pg");
+const bcrypt = require("bcryptjs");
+const crypto = require("crypto");
 
 let pool;
 
@@ -53,11 +55,6 @@ async function getQuizzes() {
 }
 
 async function saveAttempt({ username, quiz_slug, score, total }) {
-  await pool.query(
-    `INSERT INTO users (username, password_hash) VALUES ($1, $2)
-     ON CONFLICT (username) DO NOTHING`,
-    [username, "no-password-demo-account"]
-  );
   const { rows: [user] } = await pool.query("SELECT user_id FROM users WHERE username = $1", [username]);
   const { rows: [quiz] } = await pool.query("SELECT quiz_id FROM quizzes WHERE slug = $1", [quiz_slug]);
   if (!user || !quiz) throw new Error("Unknown user or quiz");
@@ -68,9 +65,62 @@ async function saveAttempt({ username, quiz_slug, score, total }) {
   );
 }
 
+async function registerUser({ username, email, password }) {
+  const { rows: [existing] } = await pool.query(
+    "SELECT user_id FROM users WHERE username = $1 OR email = $2",
+    [username, email]
+  );
+  if (existing) throw new Error("Username or email already in use");
+
+  const password_hash = await bcrypt.hash(password, 10);
+  await pool.query(
+    "INSERT INTO users (username, email, password_hash) VALUES ($1, $2, $3)",
+    [username, email, password_hash]
+  );
+  return { username };
+}
+
+async function verifyLogin({ identifier, password }) {
+  const { rows: [user] } = await pool.query(
+    "SELECT username, password_hash FROM users WHERE username = $1 OR email = $1",
+    [identifier]
+  );
+  if (!user) return null;
+  const ok = await bcrypt.compare(password, user.password_hash);
+  return ok ? { username: user.username } : null;
+}
+
+async function createPasswordResetToken({ email }) {
+  const { rows: [user] } = await pool.query("SELECT user_id, username FROM users WHERE email = $1", [email]);
+  if (!user) return null;
+
+  const token = crypto.randomBytes(32).toString("hex");
+  const expires = new Date(Date.now() + 60 * 60 * 1000);
+  await pool.query("UPDATE users SET reset_token = $1, reset_token_expires = $2 WHERE user_id = $3", [
+    token,
+    expires,
+    user.user_id,
+  ]);
+  return { token, username: user.username };
+}
+
+async function resetPassword({ token, newPassword }) {
+  const { rows: [user] } = await pool.query(
+    "SELECT user_id FROM users WHERE reset_token = $1 AND reset_token_expires > NOW()",
+    [token]
+  );
+  if (!user) throw new Error("Reset link is invalid or has expired");
+
+  const password_hash = await bcrypt.hash(newPassword, 10);
+  await pool.query(
+    "UPDATE users SET password_hash = $1, reset_token = NULL, reset_token_expires = NULL WHERE user_id = $2",
+    [password_hash, user.user_id]
+  );
+}
+
 async function getLeaderboard() {
   const { rows } = await pool.query("SELECT * FROM leaderboard LIMIT 10");
   return rows;
 }
 
-module.exports = { init, getQuizzes, saveAttempt, getLeaderboard };
+module.exports = { init, getQuizzes, saveAttempt, getLeaderboard, registerUser, verifyLogin, createPasswordResetToken, resetPassword };

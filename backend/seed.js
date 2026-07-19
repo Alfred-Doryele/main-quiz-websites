@@ -11,13 +11,14 @@ async function seedMysql() {
   const mysql = require("mysql2/promise");
   const conn = await mysql.createConnection({
     host: process.env.MYSQL_HOST,
+    port: process.env.MYSQL_PORT || 3306,
     user: process.env.MYSQL_USER,
     password: process.env.MYSQL_PASSWORD,
     database: process.env.MYSQL_DATABASE,
   });
 
   for (const quiz of quizzes) {
-    const [[category]] = await conn.query(
+    await conn.query(
       "INSERT INTO categories (name) VALUES (?) ON DUPLICATE KEY UPDATE name = name",
       [quiz.tag]
     );

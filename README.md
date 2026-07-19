@@ -144,3 +144,49 @@ Just edit `data/quizzes.json` — add new objects to any category's
 - Standalone mode picks it up immediately (no rebuild needed).
 - Backend mode needs one re-run of `npm run seed` to push the new
   questions into whichever database is active.
+
+---
+
+# v3 additions: real accounts, the Bible Quiz Zone, gamification, and going live 24/7
+
+## Real accounts (registration, login, forgot password)
+
+The old "just type a username" login is now a real account system when a backend is connected:
+- **Create an account** — username, email, password (6+ characters), stored with a bcrypt-hashed password.
+- **Log in** — with username or email, plus password.
+- **Forgot password** — enter your email, get a reset link (valid 1 hour). Without SMTP configured in `backend/.env`, the reset link prints to the backend's terminal instead of emailing — good enough for local testing.
+- Standalone/demo mode (no backend connected, e.g. plain GitHub Pages) falls back to the old simple "play as guest" name-only flow, since real accounts need a database to store passwords in.
+
+To actually send real reset emails, fill in the SMTP section of `backend/.env` — for Gmail specifically, you need an **app password** (Google Account → Security → App passwords), not your normal Gmail password.
+
+## The Bible Quiz Zone
+
+A new section (`data/bible.json`) with all 66 books of the Bible, each as its own quiz (5 questions drawn from a larger pool per book), plus a **General Knowledge** round and a **Riddles** round (clearly labeled "riddle mode" during play so it's never confused with a straightforward question). Tabs split it into Old Testament / New Testament / General & Riddles, with a search box to jump straight to a book.
+
+Note: Bible content currently always loads from `data/bible.json` directly — it isn't yet part of the seeded MySQL/PostgreSQL/MongoDB data the way the main 7 categories are. Scores from Bible quizzes still save correctly through the same attempts system. Migrating Bible questions into the database too is a reasonable next step if you want everything in one place.
+
+## Gamification
+
+- A 15-second countdown timer per question (running out counts as a wrong answer).
+- A live streak counter during play.
+- Gold / Silver / Bronze / "Keep Practicing" badges on the results screen based on your score.
+
+## Making it live 24/7, without your laptop needing to be on
+
+Right now, your database and backend only run when your laptop does. To fix that permanently and for free:
+
+1. **Database — MongoDB Atlas** (free forever, always-on, no credit card):
+   - Sign up at mongodb.com/atlas, create a free M0 cluster.
+   - Add a database user (username + password) under Database Access.
+   - Under Network Access, allow access from anywhere (0.0.0.0/0) for simplicity.
+   - Copy your connection string (Connect → Drivers) — it looks like `mongodb+srv://user:password@cluster.mongodb.net`.
+   - Run `database/mongodb_setup.js` against it once (mongosh accepts a connection string directly), then `cd backend && npm run seed` with `MONGO_URI` in `.env` set to that connection string and `DB_TYPE=mongodb`.
+
+2. **Backend — Render** (free tier, sleeps after 15 minutes idle, wakes itself in 30-60 seconds on the next visit):
+   - Push this project to GitHub (already done).
+   - On render.com, create a new **Web Service**, connect your GitHub repo, set the root directory to `backend`.
+   - Build command: `npm install`. Start command: `npm start`.
+   - Add all your `.env` values as Environment Variables in Render's dashboard instead (never commit `.env` itself).
+   - Render gives you a permanent URL like `https://your-app.onrender.com`.
+
+3. **Frontend**: set `API_BASE_URL` in `script.js` to that Render URL, then push to GitHub. Now anyone visiting your GitHub Pages link is talking to a database that's live even when your laptop is off — the only tradeoff is the first request after 15 minutes of no traffic takes 30-60 seconds to wake the backend up.

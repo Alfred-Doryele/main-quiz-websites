@@ -3,6 +3,8 @@
 // which is the natural document-database way to model this, versus the
 // joined tables the two SQL adapters use.
 const { MongoClient } = require("mongodb");
+const bcrypt = require("bcryptjs");
+const crypto = require("crypto");
 
 let client;
 let db;
@@ -21,11 +23,8 @@ async function getQuizzes() {
 }
 
 async function saveAttempt({ username, quiz_slug, quiz_title, score, total }) {
-  await db.collection("users").updateOne(
-    { username },
-    { $setOnInsert: { username, created_at: new Date() } },
-    { upsert: true }
-  );
+  const user = await db.collection("users").findOne({ username });
+  if (!user) throw new Error("Unknown user");
 
   await db.collection("attempts").insertOne({
     username,
@@ -35,6 +34,49 @@ async function saveAttempt({ username, quiz_slug, quiz_title, score, total }) {
     total,
     taken_at: new Date(),
   });
+}
+
+async function registerUser({ username, email, password }) {
+  const existing = await db.collection("users").findOne({ $or: [{ username }, { email }] });
+  if (existing) throw new Error("Username or email already in use");
+
+  const password_hash = await bcrypt.hash(password, 10);
+  await db.collection("users").insertOne({ username, email, password_hash, created_at: new Date() });
+  return { username };
+}
+
+async function verifyLogin({ identifier, password }) {
+  const user = await db.collection("users").findOne({ $or: [{ username: identifier }, { email: identifier }] });
+  if (!user) return null;
+  const ok = await bcrypt.compare(password, user.password_hash);
+  return ok ? { username: user.username } : null;
+}
+
+async function createPasswordResetToken({ email }) {
+  const user = await db.collection("users").findOne({ email });
+  if (!user) return null;
+
+  const token = crypto.randomBytes(32).toString("hex");
+  const expires = new Date(Date.now() + 60 * 60 * 1000);
+  await db.collection("users").updateOne(
+    { _id: user._id },
+    { $set: { reset_token: token, reset_token_expires: expires } }
+  );
+  return { token, username: user.username };
+}
+
+async function resetPassword({ token, newPassword }) {
+  const user = await db.collection("users").findOne({
+    reset_token: token,
+    reset_token_expires: { $gt: new Date() },
+  });
+  if (!user) throw new Error("Reset link is invalid or has expired");
+
+  const password_hash = await bcrypt.hash(newPassword, 10);
+  await db.collection("users").updateOne(
+    { _id: user._id },
+    { $set: { password_hash }, $unset: { reset_token: "", reset_token_expires: "" } }
+  );
 }
 
 async function getLeaderboard() {
@@ -63,4 +105,4 @@ async function getLeaderboard() {
     .toArray();
 }
 
-module.exports = { init, getQuizzes, saveAttempt, getLeaderboard };
+module.exports = { init, getQuizzes, saveAttempt, getLeaderboard, registerUser, verifyLogin, createPasswordResetToken, resetPassword };

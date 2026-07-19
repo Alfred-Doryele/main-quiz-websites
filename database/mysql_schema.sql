@@ -16,6 +16,8 @@ CREATE TABLE users (
   username      VARCHAR(50) NOT NULL UNIQUE,
   email         VARCHAR(120) UNIQUE,
   password_hash VARCHAR(255) NOT NULL,   -- never store plain-text passwords
+  reset_token   VARCHAR(255),
+  reset_token_expires TIMESTAMP NULL,
   created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
