@@ -10,7 +10,7 @@
    is hosted on GitHub Pages (a static host can't run a database).
    ========================================================================== */
 
-const API_BASE_URL = ""; // e.g. "http://localhost:4000" once your backend is running
+const API_BASE_URL = "https://main-quiz-websites.onrender.com";; // e.g. "http://localhost:4000" once your backend is running
 
 let ALL_QUIZZES = [];
 let BIBLE_QUIZZES = [];

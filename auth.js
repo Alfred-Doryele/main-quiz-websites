@@ -4,7 +4,7 @@
    live in script.js's modal-based auth flow, just split into real pages.
    ========================================================================== */
 
-const API_BASE_URL = ""; // keep in sync with script.js — set to your backend URL once deployed
+const API_BASE_URL = "https://main-quiz-websites.onrender.com";; // keep in sync with script.js — set to your backend URL once deployed
 
 function getCurrentUser() {
   return localStorage.getItem("bq_current_user");
