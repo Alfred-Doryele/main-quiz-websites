@@ -3,10 +3,93 @@ const express = require("express");
 const cors = require("cors");
 const db = require("./db");
 const { sendResetEmail } = require("./mailer");
+const presence = require("./presence");
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+/* ---------------- presence ("who's online") ---------------- */
+app.post("/api/presence/ping", (req, res) => {
+  const { username } = req.body;
+  if (!username) return res.status(400).json({ error: "username is required" });
+  presence.ping(username);
+  res.json({ online: presence.getOnlineUsers() });
+});
+
+app.get("/api/presence/online", (req, res) => {
+  res.json({ online: presence.getOnlineUsers() });
+});
+
+/* ---------------- live challenge rooms ---------------- */
+app.post("/api/challenges", async (req, res) => {
+  try {
+    const { username, quiz_slug } = req.body;
+    if (!username || !quiz_slug) return res.status(400).json({ error: "username and quiz_slug are required" });
+
+    const quizzes = await db.getQuizzes();
+    const quiz = quizzes.find((q) => q.slug === quiz_slug);
+    if (!quiz) return res.status(404).json({ error: "Unknown quiz" });
+
+    const room = presence.createRoom({ hostUsername: username, quiz });
+    res.status(201).json(presence.serializeRoom(room));
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Could not create challenge" });
+  }
+});
+
+app.post("/api/challenges/:code/join", (req, res) => {
+  try {
+    const { username } = req.body;
+    if (!username) return res.status(400).json({ error: "username is required" });
+    const room = presence.joinRoom(req.params.code.toUpperCase(), username);
+    res.json(presence.serializeRoom(room));
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+app.get("/api/challenges/:code", (req, res) => {
+  const room = presence.rooms.get(req.params.code.toUpperCase());
+  if (!room) return res.status(404).json({ error: "No challenge found with that code" });
+  // Only hand out the actual questions once the round has started, so
+  // players in the waiting room can't peek at answers early.
+  res.json(presence.serializeRoom(room, { includeQuestions: room.status !== "waiting" }));
+});
+
+app.post("/api/challenges/:code/start", (req, res) => {
+  try {
+    const { username } = req.body;
+    const room = presence.startRoom(req.params.code.toUpperCase(), username);
+    res.json(presence.serializeRoom(room, { includeQuestions: true }));
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+app.post("/api/challenges/:code/finish", async (req, res) => {
+  try {
+    const { username, score, total } = req.body;
+    if (!username || score == null || total == null) {
+      return res.status(400).json({ error: "username, score, and total are required" });
+    }
+    const room = presence.finishRoom(req.params.code.toUpperCase(), username, score, total);
+
+    // Also record it as a normal attempt, so a challenge result counts
+    // toward the regular leaderboard too, not just the challenge's own
+    // ranking.
+    try {
+      await db.saveAttempt({ username, quiz_slug: room.quizSlug, quiz_title: room.quizTitle, score, total });
+    } catch (err) {
+      console.warn("Challenge finished but could not also save as a regular attempt:", err.message);
+    }
+
+    res.json(presence.serializeRoom(room));
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
 
 app.get("/api/quizzes", async (req, res) => {
   try {

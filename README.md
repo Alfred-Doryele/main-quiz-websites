@@ -209,3 +209,69 @@ Right now, your database and backend only run when your laptop does. To fix that
 - The 66 individual Bible books are still at 5 questions each (330 total) — expanding those to 15-20 each is a much larger content pass (roughly 700-900 more questions) that's best tackled as its own follow-up given the sheer number of books.
 
 All of this still uses the same shuffle + no-repeat logic from v2, so bigger pools mean more genuinely different rounds before questions start repeating.
+
+---
+
+# v5: fixing the "Bible quiz doesn't reach the leaderboard" bug
+
+## What was actually wrong
+
+Two separate bugs combined to make Bible quiz scores disappear silently:
+
+1. **Bible quizzes were never seeded into the database** — only the 7 main categories were. When a live-connected site tried to save a Bible quiz attempt, the backend looked up the quiz by its slug, found nothing, and rejected the request.
+2. **The frontend didn't check whether that save actually succeeded.** It only fell back to local storage if the network request itself failed — a rejected request (HTTP error) still "succeeded" as far as that check was concerned, so the score vanished instead of saving anywhere at all.
+
+## What changed
+
+- `data/bible.json` is now seeded into the database right alongside the 7 main categories — `npm run seed` loads both files together.
+- The `quizzes` table (MySQL/PostgreSQL) gained three new columns: `book`, `testament`, and `is_riddle`, so Bible-specific info survives the round trip through the database.
+- The frontend now properly checks the save actually succeeded before skipping the local-storage fallback.
+- When connected live, the single `/api/quizzes` response is now split into the main 7 categories and the Bible content, instead of always fetching Bible questions from a separate local file. Bible scores now land in the exact same `attempts` table and the exact same leaderboard as everything else.
+
+## If you already have a live database (like the Aiven one)
+
+Your existing tables were created before these columns existed, so you need to add them:
+
+```sql
+ALTER TABLE quizzes ADD COLUMN book VARCHAR(60);
+ALTER TABLE quizzes ADD COLUMN testament VARCHAR(20);
+ALTER TABLE quizzes ADD COLUMN is_riddle BOOLEAN NOT NULL DEFAULT FALSE;
+```
+
+Run that once against your live database (Workbench → Aiven Live connection → paste and execute), then re-run:
+```
+cd backend
+npm run seed
+```
+This adds all 68 Bible quizzes fresh; your existing 7 categories are simply left as-is (`book`/`testament` stay blank for them, which is correct).
+
+---
+
+# v6: live competitions ("Compete" section)
+
+## What it does
+
+A new **Compete** section on the homepage lets logged-in players:
+- See roughly how many people are online right now (a lightweight "heartbeat" ping, not a precise headcount).
+- **Create a challenge** — pick a category, get a 5-character room code.
+- **Join a challenge** — enter a friend's code to join their room.
+- Once the host clicks **Start**, everyone in the room answers the exact same set of questions (built once, server-side, so it's fair — no one can see it early).
+- A live ranking updates every few seconds as players finish, ending with a 🏆 for whoever scored highest.
+- Every challenge result is also saved as a normal attempt, so it counts on the main leaderboard too, not just within the challenge.
+
+## Why this needs a live backend
+
+Presence and challenge rooms only make sense with a real, shared server — everyone in a room needs to see the same state at the same time. In demo/offline mode (no backend connected), the Compete section explains this instead of pretending to work.
+
+## A deliberate design choice worth understanding
+
+Presence and challenge-room data live in the backend's **memory** (see `backend/presence.js`), not in MySQL/PostgreSQL/MongoDB. That's intentional: "who's online in the last minute" and "what's happening in this one live match right now" are short-lived facts nobody needs to look up again after the fact — storing them in a database would just be overhead for data with no lasting value. Quiz results still go into the real database, same as always; only the ephemeral "right now" state is kept in memory.
+
+One consequence: if the Render free instance goes to sleep and wakes back up, any in-progress challenge room is lost (a rare edge case, and a reasonable tradeoff for a free-tier project). New rooms created after a restart work exactly as normal.
+
+## New backend routes
+
+- `POST /api/presence/ping` / `GET /api/presence/online`
+- `POST /api/challenges` (create), `POST /api/challenges/:code/join`, `GET /api/challenges/:code`, `POST /api/challenges/:code/start`, `POST /api/challenges/:code/finish`
+
+Nothing needs to be re-seeded for this feature — it's pure backend/frontend logic, no new database tables.

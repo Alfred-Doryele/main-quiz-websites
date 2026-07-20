@@ -37,6 +37,7 @@
         <li><a href="#quizzes">Quizzes</a></li>
         <li><a href="#bible-zone">Bible Quiz</a></li>
         <li><a href="#leaderboard">Leaderboard</a></li>
+        <li><a href="#compete">Compete</a></li>
         <li><a href="#contact">Contact</a></li>
       </ul>
     </nav>
@@ -57,6 +58,13 @@
   <div class="modal-content modal-quiz">
     <button class="close" onclick="closeQuizModal()" aria-label="Close">&times;</button>
     <div id="quizPlay"></div>
+  </div>
+</div>
+
+<div id="challengeModal" class="modal" role="dialog" aria-modal="true">
+  <div class="modal-content modal-quiz">
+    <button class="close" onclick="closeChallengeModal()" aria-label="Close">&times;</button>
+    <div id="challengeView"></div>
   </div>
 </div>
 
@@ -118,6 +126,13 @@
         <tbody id="leaderboardBody"><!-- injected by script.js --></tbody>
       </table>
     </div>
+  </section>
+
+  <section id="compete" class="section">
+    <p class="eyebrow" id="onlineCountNote">Checking who's online…</p>
+    <h2 class="section-title">Compete live</h2>
+    <p class="section-sub">Create a challenge, share the code, and race friends through the same set of questions in real time.</p>
+    <div class="compete-box" id="competeBox"><!-- injected by script.js --></div>
   </section>
 
   <section class="section section-cta">

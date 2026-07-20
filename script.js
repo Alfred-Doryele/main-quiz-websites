@@ -10,7 +10,7 @@
    is hosted on GitHub Pages (a static host can't run a database).
    ========================================================================== */
 
-const API_BASE_URL = "https://main-quiz-websites.onrender.com";; // e.g. "http://localhost:4000" once your backend is running
+const API_BASE_URL = ""; // e.g. "http://localhost:4000" once your backend is running
 
 let ALL_QUIZZES = [];
 let BIBLE_QUIZZES = [];
@@ -20,6 +20,7 @@ let activeQuiz = null;
 let activeRound = [];
 let activeIndex = 0;
 let activeScore = 0;
+let activeChallengeCode = null; // set when the current quiz play-through is a live challenge, not a solo quiz
 let usingLiveApi = false;
 
 /* ---------------- boot ---------------- */
@@ -34,6 +35,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   updateHeaderForUser();
   updateHeroStats();
   setDataSourcePill();
+  renderCompeteBox();
+  initPresence();
 
   const navToggle = document.getElementById("navToggle");
   const mainNav = document.getElementById("mainNav");
@@ -47,12 +50,20 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 /* ---------------- data loading (API first, local file fallback) ---------------- */
+const BIBLE_TAGS = ["Bible", "Bible Knowledge", "Bible Riddles"];
+
 async function loadQuizzes() {
   if (API_BASE_URL) {
     try {
       const res = await fetch(`${API_BASE_URL}/api/quizzes`);
       if (res.ok) {
-        ALL_QUIZZES = await res.json();
+        const everything = await res.json();
+        // The live database holds both the 7 main categories and every
+        // Bible quiz together, so a single response here is split into the
+        // two lists the UI actually uses. This is also what makes Bible
+        // quiz scores count on the same leaderboard as everything else.
+        ALL_QUIZZES = everything.filter((q) => !BIBLE_TAGS.includes(q.tag));
+        BIBLE_QUIZZES = everything.filter((q) => BIBLE_TAGS.includes(q.tag));
         usingLiveApi = true;
         return;
       }
@@ -66,10 +77,10 @@ async function loadQuizzes() {
 }
 
 async function loadBibleQuizzes() {
-  // Bible content always loads from the local file, regardless of whether a
-  // backend is connected — it isn't (yet) part of the seeded database, so
-  // scores from these quizzes still save the same way regular quizzes do
-  // via submitAttempt(), but the questions themselves come from this file.
+  // Only used in demo/offline mode — when a live backend is connected,
+  // loadQuizzes() above already populated BIBLE_QUIZZES from the same
+  // single database response as the main categories.
+  if (usingLiveApi) return;
   const res = await fetch("data/bible.json");
   BIBLE_QUIZZES = await res.json();
 }
@@ -110,12 +121,13 @@ function saveLocalAttempt(attempt) {
 async function submitAttempt(attempt) {
   if (usingLiveApi) {
     try {
-      await fetch(`${API_BASE_URL}/api/attempts`, {
+      const res = await fetch(`${API_BASE_URL}/api/attempts`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(attempt),
       });
-      return;
+      if (res.ok) return;
+      console.warn("Backend rejected the attempt, saving locally instead.", await res.text().catch(() => ""));
     } catch (err) {
       console.warn("Could not reach backend, saving locally instead.", err);
     }
@@ -407,6 +419,7 @@ function closeQuizModal() {
   clearInterval(questionTimer);
   document.getElementById("quizModal").classList.remove("open");
   activeQuiz = null;
+  activeChallengeCode = null;
 }
 
 function renderQuestion() {
@@ -487,6 +500,11 @@ async function finishQuiz() {
   const total = activeRound.length;
   const username = getCurrentUser();
 
+  if (activeChallengeCode) {
+    await finishChallenge(activeChallengeCode, activeScore, total);
+    return;
+  }
+
   await submitAttempt({
     username,
     quiz_slug: activeQuiz.slug,
@@ -526,3 +544,246 @@ document.addEventListener("keydown", (e) => {
     document.querySelectorAll(".modal.open").forEach((m) => m.classList.remove("open"));
   }
 });
+
+/* ==========================================================================
+   Compete live: presence ("who's online") + Challenge Rooms
+   All of this requires a connected backend — presence and live rooms are
+   ephemeral, shared, right-now data that only makes sense with a real
+   server behind it. In demo/offline mode the section just explains that.
+   ========================================================================== */
+
+let onlinePollTimer = null;
+let challengePollTimer = null;
+
+function initPresence() {
+  if (!usingLiveApi) return;
+  pingPresence();
+  onlinePollTimer = setInterval(pingPresence, 20000);
+}
+
+async function pingPresence() {
+  try {
+    const username = getCurrentUser();
+    let online;
+    if (username) {
+      const data = await apiPostLocal("/api/presence/ping", { username });
+      online = data.online;
+    } else {
+      const res = await fetch(`${API_BASE_URL}/api/presence/online`);
+      online = (await res.json()).online;
+    }
+    const note = document.getElementById("onlineCountNote");
+    if (note) note.textContent = `🟢 ${online.length} player${online.length === 1 ? "" : "s"} online now`;
+  } catch (err) {
+    console.warn("Presence check failed", err);
+  }
+}
+
+// Small local helper so this file doesn't depend on auth.js's apiPost.
+async function apiPostLocal(path, body) {
+  const res = await fetch(`${API_BASE_URL}${path}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || "Something went wrong");
+  return data;
+}
+
+function renderCompeteBox() {
+  const box = document.getElementById("competeBox");
+  if (!usingLiveApi) {
+    box.innerHTML = `
+      <div class="auth-offline-notice">
+        Live competitions need a connected database, since players have to share the same
+        room in real time. Right now this copy of the site is running standalone — see the
+        project README for how to connect a live backend.
+      </div>`;
+    document.getElementById("onlineCountNote").textContent = "Offline — live competitions unavailable";
+    return;
+  }
+
+  box.innerHTML = `
+    <div class="compete-actions">
+      <div class="compete-card">
+        <h3>Create a challenge</h3>
+        <p>Pick a category, get a code, invite others.</p>
+        <select id="challengeQuizPicker"></select>
+        <button class="btn btn-primary btn-block" id="createChallengeBtn">Create challenge</button>
+      </div>
+      <div class="compete-card">
+        <h3>Join a challenge</h3>
+        <p>Got a code from a friend? Enter it here.</p>
+        <input type="text" id="joinCodeInput" placeholder="e.g. K7QX9" maxlength="5" style="text-transform:uppercase">
+        <button class="btn btn-outline btn-block" id="joinChallengeBtn">Join challenge</button>
+      </div>
+    </div>
+  `;
+
+  const picker = document.getElementById("challengeQuizPicker");
+  picker.innerHTML = ALL_QUIZZES.map((q) => `<option value="${q.slug}">${q.title}</option>`).join("");
+
+  document.getElementById("createChallengeBtn").addEventListener("click", async () => {
+    if (!getCurrentUser()) {
+      window.location.href = "login.html";
+      return;
+    }
+    try {
+      const room = await apiPostLocal("/api/challenges", {
+        username: getCurrentUser(),
+        quiz_slug: picker.value,
+      });
+      openChallengeLobby(room.code);
+    } catch (err) {
+      alert(err.message);
+    }
+  });
+
+  document.getElementById("joinChallengeBtn").addEventListener("click", async () => {
+    if (!getCurrentUser()) {
+      window.location.href = "login.html";
+      return;
+    }
+    const code = document.getElementById("joinCodeInput").value.trim().toUpperCase();
+    if (!code) return;
+    try {
+      await apiPostLocal(`/api/challenges/${code}/join`, { username: getCurrentUser() });
+      openChallengeLobby(code);
+    } catch (err) {
+      alert(err.message);
+    }
+  });
+}
+
+function openChallengeModal() {
+  document.getElementById("challengeModal").classList.add("open");
+}
+function closeChallengeModal() {
+  clearInterval(challengePollTimer);
+  document.getElementById("challengeModal").classList.remove("open");
+}
+
+async function openChallengeLobby(code) {
+  openChallengeModal();
+  await pollChallengeLobby(code);
+  clearInterval(challengePollTimer);
+  challengePollTimer = setInterval(() => pollChallengeLobby(code), 3000);
+}
+
+async function pollChallengeLobby(code) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/challenges/${code}`);
+    if (!res.ok) {
+      clearInterval(challengePollTimer);
+      document.getElementById("challengeView").innerHTML = `<p class="modal-note" style="color:var(--coral)">This challenge no longer exists.</p>`;
+      return;
+    }
+    const room = await res.json();
+
+    if (room.status === "active") {
+      clearInterval(challengePollTimer);
+      launchChallengeRound(room);
+      return;
+    }
+
+    renderChallengeLobbyView(room);
+  } catch (err) {
+    console.warn("Challenge poll failed", err);
+  }
+}
+
+function renderChallengeLobbyView(room) {
+  const isHost = room.hostUsername === getCurrentUser();
+  const view = document.getElementById("challengeView");
+  view.innerHTML = `
+    <p class="eyebrow">Waiting room</p>
+    <h2>${room.quizTitle}</h2>
+    <p class="modal-sub">Share this code with friends:</p>
+    <div class="challenge-code">${room.code}</div>
+    <div class="challenge-players">
+      ${room.players.map((p) => `<span class="challenge-player-chip">${escapeHtml(p.username)}${p.username === room.hostUsername ? " (host)" : ""}</span>`).join("")}
+    </div>
+    ${
+      isHost
+        ? `<button class="btn btn-primary btn-block" id="startChallengeBtn">Start challenge</button>`
+        : `<p class="modal-note" style="color:var(--muted)">Waiting for the host to start…</p>`
+    }
+  `;
+  if (isHost) {
+    document.getElementById("startChallengeBtn").addEventListener("click", async () => {
+      try {
+        const room = await apiPostLocal(`/api/challenges/${room.code}/start`, { username: getCurrentUser() });
+        launchChallengeRound(room);
+      } catch (err) {
+        alert(err.message);
+      }
+    });
+  }
+}
+
+function launchChallengeRound(room) {
+  closeChallengeModal();
+  activeQuiz = { title: room.quizTitle, is_riddle: room.isRiddle };
+  activeRound = room.questions;
+  activeIndex = 0;
+  activeScore = 0;
+  currentStreak = 0;
+  bestStreak = 0;
+  activeChallengeCode = room.code;
+  document.getElementById("quizModal").classList.add("open");
+  renderQuestion();
+}
+
+async function finishChallenge(code, score, total) {
+  try {
+    await apiPostLocal(`/api/challenges/${code}/finish`, { username: getCurrentUser(), score, total });
+  } catch (err) {
+    console.warn("Could not submit challenge result", err);
+  }
+  closeQuizModal();
+  openChallengeModal();
+  await pollChallengeRanking(code);
+  challengePollTimer = setInterval(() => pollChallengeRanking(code), 3000);
+}
+
+async function pollChallengeRanking(code) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/challenges/${code}`);
+    if (!res.ok) return;
+    const room = await res.json();
+    renderChallengeRankingView(room);
+    if (room.status === "finished") clearInterval(challengePollTimer);
+  } catch (err) {
+    console.warn("Ranking poll failed", err);
+  }
+}
+
+function renderChallengeRankingView(room) {
+  const view = document.getElementById("challengeView");
+  const allFinished = room.status === "finished";
+  view.innerHTML = `
+    <p class="eyebrow">${allFinished ? "Final results" : "Live ranking — still in progress"}</p>
+    <h2>${room.quizTitle}</h2>
+    <div class="challenge-ranking">
+      ${room.players
+        .map((p, i) => {
+          const medal = allFinished && i === 0 ? "🏆" : i === 0 ? "🔸" : i === 1 ? "🔹" : "";
+          const status = p.finished ? `${p.score}/${p.total} (${p.percentage}%)` : "still playing…";
+          return `<div class="challenge-rank-row ${i === 0 && p.finished ? "leading" : ""}">
+            <span>${medal} ${escapeHtml(p.username)}</span>
+            <span>${status}</span>
+          </div>`;
+        })
+        .join("")}
+    </div>
+    ${allFinished ? `<button class="btn btn-primary btn-block" id="closeChallengeBtn">Done</button>` : `<p class="modal-note" style="color:var(--muted)">Updating live…</p>`}
+  `;
+  if (allFinished) {
+    document.getElementById("closeChallengeBtn").addEventListener("click", async () => {
+      closeChallengeModal();
+      await renderLeaderboard();
+      await updateHeroStats();
+    });
+  }
+}
