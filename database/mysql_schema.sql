@@ -36,6 +36,9 @@ CREATE TABLE quizzes (
   category_id  INT,
   minutes      TINYINT UNSIGNED DEFAULT 3,
   round_size   TINYINT UNSIGNED DEFAULT 5,    -- how many questions are asked per play-through
+  book         VARCHAR(60),                   -- Bible book name, if this quiz is a Bible book quiz
+  testament    VARCHAR(20),                   -- 'Old Testament' / 'New Testament' / 'General', Bible quizzes only
+  is_riddle    BOOLEAN NOT NULL DEFAULT FALSE,
   created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (category_id) REFERENCES categories(category_id)
     ON DELETE SET NULL

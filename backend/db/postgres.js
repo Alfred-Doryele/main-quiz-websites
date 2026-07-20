@@ -19,7 +19,7 @@ async function init() {
 
 async function getQuizzes() {
   const { rows: quizRows } = await pool.query(`
-    SELECT q.quiz_id, q.slug, q.title, q.description, q.minutes, q.round_size, c.name AS tag
+    SELECT q.quiz_id, q.slug, q.title, q.description, q.minutes, q.round_size, q.book, q.testament, q.is_riddle, c.name AS tag
     FROM quizzes q LEFT JOIN categories c ON c.category_id = q.category_id
   `);
 
@@ -48,6 +48,9 @@ async function getQuizzes() {
       description: quiz.description,
       minutes: quiz.minutes,
       round_size: quiz.round_size,
+      book: quiz.book || undefined,
+      testament: quiz.testament || undefined,
+      is_riddle: !!quiz.is_riddle,
       questions,
     });
   }

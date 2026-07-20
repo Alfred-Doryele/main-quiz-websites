@@ -33,6 +33,9 @@ CREATE TABLE quizzes (
   category_id  INTEGER REFERENCES categories(category_id) ON DELETE SET NULL,
   minutes      SMALLINT NOT NULL DEFAULT 3 CHECK (minutes > 0),
   round_size   SMALLINT NOT NULL DEFAULT 5 CHECK (round_size > 0),
+  book         VARCHAR(60),
+  testament    VARCHAR(20),
+  is_riddle    BOOLEAN NOT NULL DEFAULT FALSE,
   created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 

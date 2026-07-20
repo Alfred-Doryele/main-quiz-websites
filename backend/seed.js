@@ -1,10 +1,17 @@
-// Loads data/quizzes.json into the active database (MySQL, PostgreSQL, or
-// MongoDB, whichever DB_TYPE names). Run with:  npm run seed
+// Loads data/quizzes.json AND data/bible.json into the active database
+// (MySQL, PostgreSQL, or MongoDB, whichever DB_TYPE names). Run with:
+//   npm run seed
+// Combining both files here is what makes Bible quiz results count toward
+// the same leaderboard as the other 7 categories — before this, Bible
+// quizzes only existed in the browser and any live backend rejected their
+// scores because it had never heard of them.
 require("dotenv").config();
 const fs = require("fs");
 const path = require("path");
 
-const quizzes = JSON.parse(fs.readFileSync(path.join(__dirname, "../data/quizzes.json"), "utf-8"));
+const mainQuizzes = JSON.parse(fs.readFileSync(path.join(__dirname, "../data/quizzes.json"), "utf-8"));
+const bibleQuizzes = JSON.parse(fs.readFileSync(path.join(__dirname, "../data/bible.json"), "utf-8"));
+const quizzes = [...mainQuizzes, ...bibleQuizzes];
 const DB_TYPE = process.env.DB_TYPE || "mysql";
 
 async function seedMysql() {
@@ -26,10 +33,13 @@ async function seedMysql() {
     const [[catRow]] = await conn.query("SELECT category_id FROM categories WHERE name = ?", [quiz.tag]);
 
     await conn.query(
-      `INSERT INTO quizzes (slug, title, description, category_id, minutes, round_size)
-       VALUES (?, ?, ?, ?, ?, ?)
+      `INSERT INTO quizzes (slug, title, description, category_id, minutes, round_size, book, testament, is_riddle)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
        ON DUPLICATE KEY UPDATE title = VALUES(title)`,
-      [quiz.slug, quiz.title, quiz.description, catRow.category_id, quiz.minutes, quiz.round_size]
+      [
+        quiz.slug, quiz.title, quiz.description, catRow.category_id, quiz.minutes, quiz.round_size,
+        quiz.book || null, quiz.testament || null, !!quiz.is_riddle,
+      ]
     );
     const [[quizRow]] = await conn.query("SELECT quiz_id FROM quizzes WHERE slug = ?", [quiz.slug]);
 
@@ -70,10 +80,13 @@ async function seedPostgres() {
     const { rows: [catRow] } = await client.query("SELECT category_id FROM categories WHERE name = $1", [quiz.tag]);
 
     await client.query(
-      `INSERT INTO quizzes (slug, title, description, category_id, minutes, round_size)
-       VALUES ($1, $2, $3, $4, $5, $6)
+      `INSERT INTO quizzes (slug, title, description, category_id, minutes, round_size, book, testament, is_riddle)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
        ON CONFLICT (slug) DO UPDATE SET title = EXCLUDED.title`,
-      [quiz.slug, quiz.title, quiz.description, catRow.category_id, quiz.minutes, quiz.round_size]
+      [
+        quiz.slug, quiz.title, quiz.description, catRow.category_id, quiz.minutes, quiz.round_size,
+        quiz.book || null, quiz.testament || null, !!quiz.is_riddle,
+      ]
     );
     const { rows: [quizRow] } = await client.query("SELECT quiz_id FROM quizzes WHERE slug = $1", [quiz.slug]);
 
